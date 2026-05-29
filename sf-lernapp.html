@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>SF Study · HSLU MSc Sustainable Financing</title>
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#FAFAF7" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+<!-- Firebase (compat SDK so it can be used as a global, no module bundler needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<style>
+  :root {
+    --bg-base:      #FAFAF7;
+    --bg-tint:      #F0F4FF;
+    --surface:      #FFFFFF;
+    --surface-2:    #F8F9FB;
+    --border:       rgba(15, 23, 42, 0.06);
+    --text-primary:   #111827;
+    --text-secondary: #4B5563;
+    --text-muted:     #94A3B8;
+    --accent:       #4F46E5;
+    --accent-hover: #4338CA;
+    --accent-soft:  #EEF2FF;
+    --accent-line:  #C7D2FE;
+    --emerald:      #059669;
+    --emerald-soft: #ECFDF5;
+    --amber:        #D97706;
+    --amber-soft:   #FFFBEB;
+    --flame:        #F97316;
+    --rose:         #E11D48;
+    --rose-soft:    #FFF1F2;
+  }
+  html, body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-image: linear-gradient(180deg, #FAFAF7 0%, #F4F2FB 60%, #F0F4FF 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    line-height: 1.55;
+  }
+  .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; }
+  .font-mono    { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .shadow-soft {
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 2px 8px rgba(15, 23, 42, 0.04),
+      0 16px 32px -12px rgba(15, 23, 42, 0.08);
+  }
+  .shadow-lift {
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.06),
+      0 6px 16px rgba(15, 23, 42, 0.08),
+      0 24px 48px -16px rgba(15, 23, 42, 0.14);
+  }
+  .shadow-accent {
+    box-shadow:
+      0 1px 2px rgba(79, 70, 229, 0.10),
+      0 8px 20px -8px rgba(79, 70, 229, 0.30);
+  }
+
+  .surface-card {
+    background: var(--surface);
+    border-radius: 18px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .perspective-card { perspective: 1400px; }
+  .card-flip { transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2,.8,.2,1); }
+  .card-flip.is-flipped { transform: rotateY(180deg); }
+  .card-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .card-back { transform: rotateY(180deg); }
+
+  .lift-hover { transition: transform .22s ease, box-shadow .22s ease; }
+  .lift-hover:hover { transform: translateY(-2px); }
+  .lift-hover:active { transform: translateY(0); }
+
+  .btn { transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeUp .35s cubic-bezier(.2,.8,.2,1) both; }
+
+  @keyframes streakPulse {
+    0%   { transform: scale(1);  }
+    50%  { transform: scale(1.10); }
+    100% { transform: scale(1);  }
+  }
+  .pulse-once { animation: streakPulse .45s cubic-bezier(.2,.8,.2,1); }
+
+  .ring-bar { transition: stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1); }
+
+  ::selection { background: var(--accent-soft); color: var(--text-primary); }
+  input[type="search"]:focus, input:focus, textarea:focus, button:focus { outline: none; }
+  input[type="search"]:focus, input[type="text"]:focus { box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
+
+  .kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 6px; background: #FFFFFF; border: 1px solid rgba(15,23,42,0.08);
+    box-shadow: 0 1px 0 rgba(15,23,42,0.04), inset 0 -1px 0 rgba(15,23,42,0.05);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; color: var(--text-secondary); line-height: 1;
+  }
+  .tap { -webkit-tap-highlight-color: transparent; }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+
+  @keyframes liveDot {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+  .live-dot { animation: liveDot 1.8s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- =====================================================================
+   FIREBASE CONFIG — Paste YOUR OWN config below (see setup guide in chat).
+   Do NOT reuse your friend's VC-Study config or you'll share his database
+   and leaderboard. Create a free Firebase project, then re-upload to GitHub.
+   ===================================================================== -->
+<script>
+  window.FIREBASE_CONFIG = {
+    apiKey:            "PASTE_YOUR_API_KEY",
+    authDomain:        "PASTE_YOUR_AUTH_DOMAIN",
+    projectId:         "PASTE_YOUR_PROJECT_ID",
+    storageBucket:     "PASTE_YOUR_STORAGE_BUCKET",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId:             "PASTE_YOUR_APP_ID"
+  };
+</script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect, useRef, useCallback } = React;
+
+/* =========================================================================
+   FIREBASE INIT — gracefully handles missing config (shows setup screen).
+   ========================================================================= */
+const FIREBASE_READY = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey !== "PASTE_YOUR_API_KEY";
+let db = null;
+let firebaseError = null;
+if (FIREBASE_READY) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    db = firebase.firestore();
+  } catch (e) {
+    firebaseError = e.message;
+  }
+}
+
+const SESSION_KEY = "sf_session_name";
+function normalizeName(n){
+  return (n||"").toLowerCase().trim().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "").slice(0, 40);
+}
+function timeAgo(date){
+  if (!date) return "—";
+  const d = (date instanceof Date) ? date : (date.toDate ? date.toDate() : new Date(date));
+  const sec = Math.floor((Date.now() - d.getTime())/1000);
+  if (sec < 60)   return `${sec}s ago`;
+  const min = Math.floor(sec/60);
+  if (min < 60)   return `${min}m ago`;
+  const hr  = Math.floor(min/60);
+  if (hr  < 24)   return `${hr}h ago`;
+  const day = Math.floor(hr/24);
+  if (day < 30)   return `${day}d ago`;
+  const mo  = Math.floor(day/30);
+  return `${mo}mo ago`;
+}
+
+/* =========================================================================
+   TOPICS — sourced from the six lectures + both mock exams.
+   Weight reflects exam frequency / emphasis (5 = highest).
+   ========================================================================= */
+const TOPICS = [
+  { id:"green-bonds",   name:"Green Bonds & the GBP",                    weight:5 },
+  { id:"slb",           name:"Sustainability-Linked Bonds (SLB)",        weight:5 },
+  { id:"esg-ratings",   name:"ESG Ratings & Rating Approaches",          weight:5 },
+  { id:"climate-risk",  name:"Climate Risk (Physical vs. Transition)",   weight:5 },
+  { id:"intro",         name:"Sustainability: Concepts & Definitions",   weight:4 },
+  { id:"eu-taxonomy",   name:"EU Taxonomy & Taxonomies",                 weight:4 },
+  { id:"double-mat",    name:"Double Materiality & Additionality",       weight:4 },
+  { id:"financing",     name:"Financing Concept & Markets",              weight:4 },
+  { id:"greenium",      name:"Green Bond Premium (Greenium)",            weight:4 },
+  { id:"transition",    name:"Transition Bonds & CTB",                   weight:4 },
+  { id:"re-relevance",  name:"Real Estate Relevance & Green Buildings",  weight:4 },
+  { id:"green-premium", name:"Green Price Premium & Hedonic Method",     weight:4 },
+  { id:"gb-benefits",   name:"Green Building Benefits & Valuation",      weight:4 },
+  { id:"controversies", name:"Controversial Practices & Norms",          weight:4 },
+  { id:"scenario",      name:"Scenario Analysis & Risk Tools",           weight:4 },
+  { id:"social-bonds",  name:"Social Bonds (SBP)",                       weight:3 },
+  { id:"sustain-bonds", name:"Sustainability Bonds (SBG)",               weight:3 },
+  { id:"esg-screened",  name:"ESG-Screened Bonds",                       weight:3 },
+  { id:"reg-greenwash", name:"Greenwashing, OECD & Regulation",          weight:3 },
+  { id:"building-std",  name:"Building Standards & GRESB",               weight:3 },
+  { id:"mortgages",     name:"Swiss Mortgages, Basel III & Scope 1/2/3", weight:3 },
+  { id:"risk-mgmt",     name:"Risk Management & Lender Actions",         weight:3 },
+  { id:"gss-market",    name:"GSS+ Market (Size & Regions)",             weight:2 },
+];
+
+const SRC = {
+  intro:   (s) => `Intro to Sustainable Financing (Berchtold), Slide ${s}`,
+  debt1:   (s) => `Green Bonds & Special Purpose Debt Instruments – Part I (Mattmann), Slide ${s}`,
+  debt2:   (s) => `SLB & ESG-related Debt Instruments – Part II (Mattmann), Slide ${s}`,
+  helvetia:(s) => `Green Bonds @ Helvetia Baloise (Engesser), Slide ${s}`,
+  re:      (s) => `Green Mortgages & Real Estate (Kraft/Kempf), Slide ${s}`,
+  esgr:    (s) => `Assessment of Corporate ESG Risks (Mattmann), Slide ${s}`,
+  rm:      (s) => `ESG Risk Management (Berchtold), Slide ${s}`,
+  ex24:    (q) => `Past Exam 2024, Assignment ${q}`,
+  ex25:    (q) => `Past Exam 2025, Assignment ${q}`,
+};
+
+/* ============================ FLASHCARDS ============================ */
+const CARDS = [
+  // ---- Intro: concepts ----
+  { id:"c01", topic:"intro", q:"Definition of «Sustainability» (and what it is based on)", a:"«Sustainable development is development that meets the needs of the present without compromising the ability of future generations to meet their own needs.»\nThis is the definition from the Brundtland Report (1987).", src: SRC.intro(10) + " | " + SRC.ex24(1) },
+  { id:"c02", topic:"intro", q:"What are the SDGs?", a:"17 UN Sustainable Development Goals, adopted end of September 2015 by the UN General Assembly (193 member states) within the «2030 Agenda for Sustainable Development». They span three areas: environment, society and economy.", src: SRC.intro(11) },
+  { id:"c03", topic:"intro", q:"ESG — what do the three letters stand for, with examples?", a:"Environmental: climate change, biodiversity, water & energy efficiency, waste management.\nSocial: equal opportunities, health, workplace & product safety, human rights, child labor, supply chain.\nGovernance: business ethics, compliance, board independence, lobbying, corruption, conflicts of interest.", src: SRC.intro(12) },
+  { id:"c04", topic:"intro", q:"Paris Agreement — when, objective, key mechanism?", a:"Adopted 12 Dec 2015 at COP21 in Paris. Objective: limit global warming to well below 2°C above pre-industrial levels, pursuing efforts to limit it to 1.5°C. Focus areas: mitigation, adaptation, finance. Each country sets Nationally Determined Contributions (NDCs), reviewed every 5 years.", src: SRC.intro(13) },
+  { id:"c05", topic:"intro", q:"Sustainability conflict of interest — give an example", a:"Nikin wanted to become the most sustainable Swiss clothing brand — yet cut jobs to achieve it. A firm can pursue an environmental goal that conflicts with a social goal (here: employment/job security).", src: SRC.intro(14) + " | " + SRC.ex24(1) },
+  { id:"c06", topic:"intro", q:"Challenges of Sustainable Financing (4 from the wrap-up)", a:"• Heterogeneous understanding of what «sustainability» is\n• Limited access to data\n• Lack of standardization of measurement and disclosure\n• Conflicts of interest", src: SRC.intro(58) },
+
+  // ---- EU Taxonomy ----
+  { id:"c07", topic:"eu-taxonomy", q:"What is the EU Taxonomy?", a:"A classification system establishing a list of environmentally sustainable economic activities. It gives companies, investors and policymakers definitions of which activities count as environmentally sustainable — creating investor security, protecting against greenwashing, and helping shift investment where it's most needed.", src: SRC.intro(15) },
+  { id:"c08", topic:"eu-taxonomy", q:"From concept to regulation — the three-level logic of taxonomies", a:"Concept / Definitions → Standard / Framework → Regulation. Taxonomies move sustainability ideas from loose concepts into standards and finally into binding regulation.", src: SRC.intro(16) },
+  { id:"c09", topic:"eu-taxonomy", q:"One advantage and one problem of taxonomies like the EU Taxonomy", a:"Advantage: a common, clear classification reduces greenwashing and gives investors/companies security and comparability.\nProblem: politicization & disputed inclusions (e.g. the debate over including gas and nuclear activities); complexity and reporting burden.", src: SRC.intro(15) + " | " + SRC.intro(18) + " | " + SRC.ex25(1) },
+
+  // ---- Double materiality ----
+  { id:"c10", topic:"double-mat", q:"Double Materiality — the two perspectives", a:"Financial materiality (outside-in): to what extent do environmental/climate changes pose a risk to me as a company? Target group: investors, capital providers, management.\nImpact / eco-social materiality (inside-out): to what extent do I, as a company, pose a risk to the environment/society? Target group: society, employees, environment.", src: SRC.intro(23) + " | " + SRC.esgr(9) },
+  { id:"c11", topic:"double-mat", q:"Additionality — definition", a:"An activity is «additional» if the intervention is what causes the activity to take place. Additionality = (impact/change WITH intervention) − (impact/change WITHOUT intervention, the baseline).", src: SRC.intro(26) },
+  { id:"c12", topic:"double-mat", q:"Greenwashing & investment goals — the three levels", a:"1. Impact with additionality: a positive contribution that changes outcomes (true impact).\n2. Alignment: aligning with goals like SDGs or net-zero, but WITHOUT additionality.\n3. ESG for financial performance: financial materiality / ESG-risk considerations only.", src: SRC.intro(32) },
+
+  // ---- Financing concept & markets ----
+  { id:"c13", topic:"financing", q:"Three ways a financing can be considered «sustainable» (basic concept)", a:"Looking at the lender→borrower flow:\n1. The COLLATERAL fulfils a sustainability standard.\n2. The ACT of lending is sustainable (e.g. financial inclusion as social impact).\n3. The BORROWER is / acts sustainably (environmental & social sustainability).", src: SRC.intro(43) + " | " + SRC.ex24(1) },
+  { id:"c14", topic:"financing", q:"Primary vs. Secondary debt market", a:"Primary market: marketplace for NEW debt; purpose is capital raising by the borrower; direct purchase; one-time; fixed conditions at issue.\nSecondary market: trading of EXISTING debt; purpose is profit (±) for lenders; indirect; traded N times; fluctuating price.", src: SRC.intro(30) },
+  { id:"c15", topic:"financing", q:"How does sustainability play a different role in the primary vs secondary market? (additionality lens)", a:"In the primary market the issuer raises new capital, so buying the bond can have additionality (it funds the project). In the secondary market you only buy existing debt from another investor — no new money reaches the company, so there is essentially no additionality.", src: SRC.intro(28) + " | " + SRC.intro(29) + " | " + SRC.ex25(1) },
+  { id:"c16", topic:"financing", q:"Special challenges in the SME market for sustainable finance", a:"• Sustainability data from SMEs is insufficient\n• Reporting effort required from SMEs is too big\n• Data often not verified/verifiable\n• Financial incentive for SMEs too small vs. reporting effort\n• Volumes too small vs. the effort required for banks", src: SRC.intro(35) },
+
+  // ---- Green bonds ----
+  { id:"c17", topic:"green-bonds", q:"What is a green bond?", a:"Any type of (standard) bond instrument where the proceeds are exclusively applied to finance/re-finance eligible «green projects» (environmental objective) AND which is aligned with the four core components of the GBP. Often called impact / earmarked / ring-fenced / use-of-proceeds bonds. Otherwise structured identically to a conventional bond.", src: SRC.debt1(12) + " | " + SRC.debt1(15) },
+  { id:"c18", topic:"green-bonds", q:"Three features green bonds and conventional bonds have in COMMON", a:"Periodic coupons; repaid at maturity; receive a credit rating; credit risk is the company's; purpose is (re-)financing. (i.e. economically identical — they are «otherwise identically structured to their non-green counterparts».)", src: SRC.debt1(13) + " | " + SRC.ex24(2) },
+  { id:"c19", topic:"green-bonds", q:"Three key DIFFERENCES between green and conventional bonds", a:"Green bonds additionally have: use of proceeds restricted to green projects; separate booking/tracking of proceeds; a 'green' label; transparency on use of proceeds (documentation/reporting); and external review (second party opinion).", src: SRC.debt1(13) + " | " + SRC.ex24(2) },
+  { id:"c20", topic:"green-bonds", q:"Who decides if a bond is «green»? (the core problem & solution)", a:"Problem: no mandatory regulation defines a green bond/project, so greenwashing is a risk. Solution: voluntary guidelines from recognized organizations — ICMA Green Bond Principles (GBP), the Climate Bonds Standard (CBS) from the Climate Bonds Initiative (CBI), and the EU Green Bond Standard (EuGB).", src: SRC.debt1(14) },
+  { id:"c21", topic:"green-bonds", q:"The 4 core components of the ICMA Green Bond Principles", a:"1. Use of proceeds (fully finance eligible green projects with quantifiable environmental benefit)\n2. Process for project evaluation and selection\n3. Management of proceeds (separate tracking, sub-account, transparency)\n4. Reporting (annual; share allocated + impact KPIs).", src: SRC.debt1(18) },
+  { id:"c22", topic:"green-bonds", q:"GBP — the 2 key recommendations (beyond the 4 core components)", a:"i. Green Bond Framework — issuer explains alignment with the four components in accessible legal documentation.\nii. External review («second party opinion») — assess alignment pre-issuance and verify fund tracking post-issuance.", src: SRC.debt1(19) },
+  { id:"c23", topic:"green-bonds", q:"Examples of eligible green project categories (GBP)", a:"10 categories incl.: renewable energy; energy efficiency; pollution prevention & control; clean transportation; climate change adaptation; green buildings (recognized certifications). → Green bonds are typically only available to firms in 'green' sectors or for a-priori 'green' projects.", src: SRC.debt1(16) },
+  { id:"c24", topic:"green-bonds", q:"The 5 high-level environmental objectives green projects should contribute to", a:"Climate change mitigation; climate change adaptation; natural resource conservation; biodiversity conservation; pollution prevention and control.", src: SRC.debt1(17) },
+  { id:"c25", topic:"green-bonds", q:"Opportunities for issuers of special-purpose bonds", a:"Allocate funds to eco-social projects; demonstrate impact to investors; financial + eco-social value proposition; signal high ESG commitment; diversify/enlarge the investor base; possibly lower financing costs; reputation gain.", src: SRC.debt1(30) },
+  { id:"c26", topic:"green-bonds", q:"Challenges for issuers of green bonds", a:"No universally accepted legal definition; even controversial issuers (oil/gas) can issue them; greenwashing doubts; uncertainty if a project is delayed/cancelled or the SPO is withdrawn; no step-up if expectations are missed; impact hard to measure; more costly/complex than conventional bonds.", src: SRC.debt1(31) },
+  { id:"c27", topic:"green-bonds", q:"Blue bonds — what are they?", a:"An earmarked instrument to finance ocean-based projects benefiting the «Blue Economy» (e.g. sustainable fisheries). ICMA released voluntary guidance based on the GBP, focused on SDG 14 (Life Below Water). Blue bonds are a SUBSET of green bonds. First sovereign blue bond: Seychelles, 2018 ($15m).", src: SRC.debt1(23) },
+  { id:"c28", topic:"green-bonds", q:"Helvetia Baloise green bond — eligible green assets & rationale", a:"Proceeds finance/refinance certified buildings (Minergie, LEED Gold/Platinum, SNBS, BREEAM, DGNB) and redevelopments achieving certification or ≥30% GHG reduction. Rationale: leverage existing real estate portfolio, build ESG momentum, optimize investor base/pricing, and a lower 'greenium' refinancing cost.", src: SRC.helvetia(16) + " | " + SRC.helvetia(19) },
+
+  // ---- Greenium ----
+  { id:"c29", topic:"greenium", q:"Green bond premium («greenium») — definition", a:"The yield differential at issuance between a green bond and an otherwise identical conventional bond. A negative spread (lower yield) means the issuer can borrow slightly cheaper. Example: Iberdrola priced ~5 bps below its conventional benchmark.", src: SRC.debt1(21) + " | " + SRC.ex25(2) },
+  { id:"c30", topic:"greenium", q:"Two reasons a greenium might exist", a:"• Strong investor demand for green/ESG assets (oversubscription) lets issuers price tighter.\n• Diversified/enlarged investor base of sustainability-sensitive investors.\n(Issuers may also gain reputation; investors accept slightly lower yield for pro-environmental preference.)", src: SRC.debt1(21) + " | " + SRC.debt1(30) + " | " + SRC.ex24(2) },
+  { id:"c31", topic:"greenium", q:"What does academic literature say about the size of the greenium?", a:"Evidence of a green bond premium of 0–19 bps globally; a recent paper finds ~12 bps on average. For the CHF market the greenium varies over time and seems to decline — since Sep 2022 it can no longer be determined with 95% certainty whether a CHF greenium exists.", src: SRC.debt1(22) },
+
+  // ---- Social bonds ----
+  { id:"c32", topic:"social-bonds", q:"Social bond — main feature", a:"Any bond instrument where proceeds are exclusively applied to «social projects» with social objectives for a certain target group, AND which is aligned with the four core components of the ICMA Social Bond Principles (SBP).", src: SRC.debt1(24) + " | " + SRC.ex25(2) },
+  { id:"c33", topic:"social-bonds", q:"Eligible social project categories & target populations (SBP)", a:"Categories (6) e.g.: affordable basic infrastructure (clean water, sanitation); access to essential services (health, education, finance); affordable housing; food security.\nTarget populations: people below the poverty line; people with disabilities/undereducated; migrants, displaced persons, aging population.", src: SRC.debt1(25) },
+  { id:"c34", topic:"social-bonds", q:"How do the SBP relate to the GBP?", a:"The SBP are consistent with the GBP — same 4 core components (use of proceeds; evaluation & selection; management of proceeds; reporting) plus the same 2 recommendations (framework, external review). The MAIN difference is the project objective (social vs. environmental).", src: SRC.debt1(26) },
+
+  // ---- Sustainability bonds ----
+  { id:"c35", topic:"sustain-bonds", q:"Sustainability bond — main feature", a:"A bond whose proceeds are exclusively applied to a COMBINATION of both green AND social projects, aligned with the four core components of both the GBP and the SBP (ICMA Sustainability Bond Guidelines, SBG).", src: SRC.debt1(28) },
+
+  // ---- SLB ----
+  { id:"c36", topic:"slb", q:"Sustainability-linked bond (SLB) — what is it?", a:"A bond whose FINANCIAL terms can change depending on whether the issuer meets predefined sustainability goals. It is forward-looking and performance-based: coupon payments are typically linked to Sustainability Performance Targets (SPTs). Most common consequence if a KPI is missed: a coupon STEP-UP.", src: SRC.debt2(35) },
+  { id:"c37", topic:"slb", q:"SLB vs. special-purpose (green/social) bonds — key difference", a:"SLB proceeds are NOT earmarked — they fund general corporate purposes. Instead, the WHOLE company commits to future sustainability targets, with pricing linked to achievement. (Green/social bonds restrict use of proceeds; SLBs restrict nothing but tie cost to KPIs.)", src: SRC.debt2(34) + " | " + SRC.debt2(35) },
+  { id:"c38", topic:"slb", q:"The 5 core components of the ICMA Sustainability-Linked Bond Principles (SLBP)", a:"1. Selection of KPIs (relevant, core, material, measurable, externally verifiable)\n2. Calibration of SPTs (ambitious, beyond business-as-usual)\n3. Bond characteristics (consequence if SPT missed — usually coupon step-up)\n4. Reporting (on KPI/SPT, e.g. annually)\n5. Verification (independent external; pre-issuance recommended, post-issuance necessary).", src: SRC.debt2(37) },
+  { id:"c39", topic:"slb", q:"First SLB vs. first green bond — the timeline point", a:"SLBs are a relatively «new» instrument: Italian utility Enel issued the first SLB in 2019, whereas the first green bond was issued in 2007 by the European Investment Bank (EIB).", src: SRC.debt2(35) },
+  { id:"c40", topic:"slb", q:"SLB examples: Holcim, Novartis, Enel", a:"Holcim (2020): EUR 850m / 0.5% / 2031 / +0.75% step-up.\nNovartis (2020): EUR 1.85bn / 0.00% / 2028 / +0.25% step-up.\nEnel: ~EUR 11bn SLBs; missed its 2023 Scope-1 carbon-intensity SPT (160 vs. target <148 gCO₂eq/kWh) → +0.25% step-up, ~EUR 25m extra interest.", src: SRC.debt2(38) + " | " + SRC.debt2(39) + " | " + SRC.debt2(40) },
+  { id:"c41", topic:"slb", q:"SLB advantages from an ISSUER's / corporation's perspective", a:"Flexibility in use of proceeds (vs. green bonds); signal ESG commitment; start measuring ESG metrics (understand own ESG risks); diversify/enlarge investor base; potentially lower financing costs; reputation gain.", src: SRC.debt2(42) + " | " + SRC.ex25(3) },
+  { id:"c42", topic:"slb", q:"SLB challenges / criticism", a:"No restriction on use of proceeds; ambition of self-set target and penalty may be weak; low incentives; issuer not obliged to keep meeting the target on a rolling basis; no legally-binding standards; greenwashing/credibility concerns; uncertainty on target failure and measurement.", src: SRC.debt2(42) },
+
+  // ---- Transition bonds ----
+  { id:"c43", topic:"transition", q:"Transition bonds — what are they and who issues them?", a:"Use-of-proceeds bonds whose proceeds fund decarbonizing operations/projects. Intention: 'brown' today, with a clear ambition/strategy to be 'greener'. Used by hard-to-abate sectors (cement, oil & gas, steel) that have a reduction strategy (net-zero / 1.5°C). Focus is short-/medium-term transition finance.", src: SRC.debt2(45) },
+  { id:"c44", topic:"transition", q:"Green-labelled vs. transition-labelled bonds", a:"Green-labelled: proceeds finance ALREADY-GREEN activities in low-emitting sectors (e.g. renewables, green buildings).\nTransition-labelled: proceeds finance the TRANSITION of 'brown' / high-emitting industries that must substantially contribute to halving global emissions by 2030 and net-zero by 2050.", src: SRC.debt2(47) + " | " + SRC.ex24(3) },
+  { id:"c45", topic:"transition", q:"Transition bond use-of-proceeds examples by industry", a:"Energy: coal-to-gas switch, co-generation (CHP). Transport: gas-powered ships (vs. marine diesel), sustainable aviation fuel (SAF). Industry: cement/metals/glass efficiency — reduce clinker ratio, recycled raw materials, higher recycling.", src: SRC.debt2(46) },
+  { id:"c46", topic:"transition", q:"ICMA Climate Transition Bond (CTB) Guidelines — basics", a:"Published Nov 2025. CTBs are use-of-proceeds bonds that follow the GBP's four core components (with adaptations for Climate Transition projects) plus the two recommendations (framework + external review). Core component 1 requires alignment with sector pathways/roadmaps and substantial, quantifiable GHG mitigation beyond business-as-usual.", src: SRC.debt2(48) + " | " + SRC.debt2(49) },
+
+  // ---- ESG-screened ----
+  { id:"c47", topic:"esg-screened", q:"ESG-screened bonds — what are they (and not)?", a:"NOT a debt instrument but a PROCESS to (de-)select = screen issuers of fixed-income securities on ESG criteria. Financial and non-financial criteria are applied at portfolio/index level; the bond universe is filtered by issuer ESG ratings.", src: SRC.debt2(57) },
+  { id:"c48", topic:"esg-screened", q:"The ESG-screening process (3 steps)", a:"1. Screen instrument/issuer on FINANCIAL criteria (coupon, maturity, rating, issue size, balance sheet).\n2. Screen issuer on NON-FINANCIAL criteria (ESG ratings, international norms e.g. UN Global Compact, controversial products e.g. weapons/tobacco).\n3. Apply traditional ESG strategies (exclusions, positive selection, best-in-class).", src: SRC.debt2(57) },
+  { id:"c49", topic:"esg-screened", q:"Values-based vs. norms-based exclusions (iShares example)", a:"Values-based: exclude controversial weapons, firearms retail, thermal coal, tobacco. Norms-based: exclude issuers failing the UN Global Compact Principles or involved in serious controversies.", src: SRC.debt2(58) },
+
+  // ---- GSS+ market ----
+  { id:"c50", topic:"gss-market", q:"GSS / GSS+ / thematic bonds — naming conventions", a:"GSS = Green, Social, and Sustainability bonds. GSS+ = GSS plus other bonds (sustainability-linked + transition). Thematic bonds (per World Bank) = green, social, sustainability AND sustainability-linked bonds.", src: SRC.debt2(9) },
+  { id:"c51", topic:"gss-market", q:"GSS+ market — size and composition", a:"~$1 trillion in annual issuance (≈10–15% of the global bond market). Special-purpose (GSS) bonds make up ~95% of GSS+. Green bonds are the majority (~62%, ~$620bn). Social (~$150bn) and sustainability bonds (~$175bn) are still niche; SLB (~$35bn) and transition (~$20bn) are negligible by volume.", src: SRC.debt2(53) },
+  { id:"c52", topic:"gss-market", q:"GSS+ market by region", a:"Europe has led GSS+ issuance every year since 2017, by far (~47%). APAC is second (~24%). North America (~12%) is more reluctant; Middle East & Africa (~2%) is the smallest share.", src: SRC.debt2(54) },
+
+  // ---- Real estate relevance ----
+  { id:"c53", topic:"re-relevance", q:"Impact of real estate + buildings worldwide (3 key figures)", a:"~1/3 of final energy consumption; ~40% of CO₂ emissions; ~50% of total natural resource consumption. The global building footprint grew ~23% from 2010–2018 (2.5%/yr → doubling in ~28 years).", src: SRC.re(30) + " | " + SRC.ex24(4) },
+  { id:"c54", topic:"re-relevance", q:"What is a «green building»? (World Green Building Council)", a:"A building that, in its design, construction or operation, reduces/eliminates negative impacts and can create positive impacts on climate and nature. Features: efficient energy/water/resource use; renewable energy; pollution & waste reduction; good indoor air quality; non-toxic/sustainable materials; consideration of environment and occupant quality of life; adaptability.", src: SRC.re(26) },
+  { id:"c55", topic:"re-relevance", q:"Embodied energy / embodied carbon — definition", a:"The GHG emissions (CO₂e) associated with materials and construction processes across the WHOLE lifecycle of a building (production, transport, disposal) — «graue Energie». As operational emissions become manageable, embodied energy becomes the increasingly important and still largely unresolved challenge.", src: SRC.re(33) },
+  { id:"c56", topic:"re-relevance", q:"History of the sustainability concept (the >300-year point)", a:"The concept is over 300 years old — it originates in the overexploitation of forests (forestry: cut no more wood than can regrow). It did NOT begin with Chernobyl. Modern milestones: Brundtland Report (1987), Rio Conference (1992), BREEAM (1990/92), LEED & Minergie (1998), SNBS (2013).", src: SRC.re(27) + " | " + SRC.re(40) + " | " + SRC.ex24(4) },
+  { id:"c57", topic:"re-relevance", q:"Three-pillar model (triple bottom line) of sustainability", a:"Economy, society and environment are connected and interdependent. The two extra «pillars» are equity (justice between North/South, today/tomorrow) and equality of the three dimensions. Reflected in the Swiss Federal Constitution.", src: SRC.re(28) + " | " + SRC.re(29) },
+
+  // ---- Building standards ----
+  { id:"c58", topic:"building-std", q:"Standard/guideline vs. label/certification", a:"Standard/guideline: open, self-declared by the project team, freely interpretable, flexible (e.g. SIA 2040, SNBS as guideline). Label/certification: verification documents + EXTERNAL review by a certification body, rigid but recognized & comparable (e.g. Minergie, GEAK, LEED).", src: SRC.re(33) },
+  { id:"c59", topic:"building-std", q:"MINERGIE — what is it?", a:"A Swiss building standard for new & modernized buildings (>25 years). Focus: comfort, efficiency, value retention. Variants: Minergie (quality/comfort/efficiency), Minergie-P (near-zero-energy, high-quality envelope), Minergie-A (plus-energy). ~2.43% of Swiss residential properties are certified.", src: SRC.re(42) },
+  { id:"c60", topic:"building-std", q:"GEAK — what is it?", a:"GEAK = the cantonal building energy certificate (Gebäudeenergieausweis der Kantone). It assesses three characteristics — efficiency of the building envelope, total energy efficiency, and direct CO₂ emissions — and assigns 7 energy classes (A–G).", src: SRC.re(43) },
+  { id:"c61", topic:"building-std", q:"SNBS — and why is it the most comprehensive Swiss standard?", a:"Standard Nachhaltiges Bauen Schweiz: the first comprehensive, certifiable Swiss standard (developed 2011–12 for the SFOE). Unlike GEAK/Minergie (energy-focused), SNBS covers all 3 pillars — society, economy, environment (12 topics, 23 criteria, 45 indicators, 139 metrics).", src: SRC.re(44) + " | " + SRC.ex24(4) },
+  { id:"c62", topic:"building-std", q:"GRESB — what is it and how does it differ from LEED/BREEAM?", a:"Global Real Estate Sustainability Benchmark (founded 2009): an independent rating measuring the sustainability performance of real estate COMPANIES and FUNDS at PORTFOLIO level. LEED/BREEAM focus on individual properties; GRESB aggregates across the portfolio. Categories: Management (30 pts), Performance (70), Development (70). Top performers = «Green Star».", src: SRC.re(50) + " | " + SRC.re(51) + " | " + SRC.re(54) },
+
+  // ---- Green price premium ----
+  { id:"c63", topic:"green-premium", q:"Do green buildings achieve higher prices/rents? (meta-analysis)", a:"Yes. Fuerst & Dalton (2019), 42 international studies: average rental premium ~6.02% and sales premium ~7.61%. In Switzerland, Salvi et al. (2008): ~7% premium for Minergie single-family homes and ~3.5% for condominiums.", src: SRC.re(55) + " | " + SRC.re(61) },
+  { id:"c64", topic:"green-premium", q:"The hedonic method — what is it?", a:"A statistical instrument to make heterogeneous goods comparable. Every property is a bundle of attributes (size, location, age, quality…). Multiple regression derives the implicit price of each attribute — so you can isolate the value of «green» while holding everything else constant (ceteris paribus).", src: SRC.re(56) + " | " + SRC.re(57) },
+  { id:"c65", topic:"green-premium", q:"Estimating «green» in a hedonic regression", a:"«Green» can enter as a dummy variable (1/0, using a label like MINERGIE as a proxy) or as a linear variable (a measure of greenness, e.g. kWh/m²). The estimated coefficient is the green premium — note it need not exceed the extra construction cost of building green.", src: SRC.re(59) },
+  { id:"c66", topic:"green-premium", q:"Reading a log-linear hedonic coefficient (the exam trick)", a:"In ln(Price) = β0 + β1·MINERGIE + …, the coefficient β1 on the green dummy is ≈ the percentage price mark-up. So β1 = 0.03 → ~3% mark-up; β1 = 0.045 → ~4.5% mark-up for a certified building.", src: SRC.re(59) + " | " + SRC.ex24(4) + " | " + SRC.ex25(4) },
+  { id:"c67", topic:"green-premium", q:"Decomposing the green premium (Kempf & Syz 2022, Zurich)", a:"Total green premia: 2.45% (canton) / 4.91% (city). Of this: ~6% (city: insignificant) from energy savings; ~71% (city: 70%) from increased COMFORT/quality of living; ~23% (city: 33%) from building VALUE retention. → ~2/3 comfort, ~1/3 value retention, small bit for energy savings.", src: SRC.re(73) },
+
+  // ---- Green building benefits ----
+  { id:"c68", topic:"gb-benefits", q:"Why does the market pay a premium for green buildings (beyond energy savings)?", a:"Energy savings alone don't explain it. The premium also reflects: reduced water/waste/emissions & O&M cost; the value of a better building envelope (slower depreciation, lower future renovation cost); and utility to tenants — comfort, lower sick rates, higher productivity.", src: SRC.re(62) + " | " + SRC.re(63) },
+  { id:"c69", topic:"gb-benefits", q:"Kats (2003) «green bill» — the two key findings", a:"• Productivity benefits are estimated at ~10× the energy savings.\n• Total financial benefits of green buildings are ~10× the initial design & construction costs. (20-yr NPV ≈ +489 USD/sqm after subtracting the green cost premium.)", src: SRC.re(75) + " | " + SRC.ex25(4) },
+  { id:"c70", topic:"gb-benefits", q:"Additional construction cost of building green (RICS/CBRE)", a:"Basic certification: +2–3%. Higher certification: +5–7.5%. Zero-carbon status: up to +12.5%. (Excludes land value, unlike the green premium on market prices.) Usually much less than the market price premium.", src: SRC.re(70) },
+  { id:"c71", topic:"gb-benefits", q:"Property valuation & the cap-rate channels (Kempf & Syz)", a:"Value V = discounted future net operating income (rents R minus costs C). Green buildings raise V through three channels:\n1. Decreased operating costs Ct ↓ → V ↑\n2. Increased net rents Rt ↑ → V ↑\n3. Lower risk premium RP ↓ → gross cap rate i ↓ → V ↑", src: SRC.re(71) + " | " + SRC.re(72) },
+  { id:"c72", topic:"gb-benefits", q:"Evidence summary: construction cost, operating cost, vacancy, risk premium", a:"Construction cost: NO clear effect (mixed, −0.4% to +21%). Operating cost: mixed/NOT clear. Vacancy risk: YES — sustainable buildings have lower vacancy risk (consensus). Risk premium: YES — lower; e.g. Kempf & Syz find ~0.56% lower cap rates for Minergie, others up to 65 bps.", src: SRC.re(77) + " | " + SRC.re(78) + " | " + SRC.re(79) + " | " + SRC.re(80) },
+
+  // ---- Mortgages, Basel III, Scope ----
+  { id:"c73", topic:"mortgages", q:"Scope 1, 2 and 3 emissions (for a bank)", a:"Scope 1: direct emissions the bank causes itself (e.g. electricity GENERATION in its own branches / company vehicles). Scope 2: indirect from purchased energy (e.g. district heating/cooling, purchased electricity). Scope 3: all other value-chain emissions — for a bank the big one is FINANCED emissions (financing & investments) and e.g. employee commuting.", src: SRC.re(17) + " | " + SRC.ex25(4) },
+  { id:"c74", topic:"mortgages", q:"Why are mortgages central to «financed emissions» in Switzerland?", a:"Swiss mortgage volume is ~170% of GDP — a huge stock. A large fraction of new mortgages funds construction and refurbishment, so banks' financed emissions (Scope 3) and their leverage over building sustainability run mainly through mortgages. Biggest impact: financing heating replacements in cities.", src: SRC.re(6) + " | " + SRC.re(14) + " | " + SRC.re(15) },
+  { id:"c75", topic:"mortgages", q:"Basel III (Swiss, from 1 Jan 2025) — effect on green/real-estate lending", a:"Banks must hold significantly more equity when the loan-to-value (LTV) exceeds 60%, raising their cost and the mortgage rate charged. Combined with the UBS–CS merger reducing credit supply, this contributes to a credit crunch: fewer developments, less housing supply, rising rents.", src: SRC.re(20) },
+  { id:"c76", topic:"mortgages", q:"Impact-oriented vs. merely sustainable real-estate investment", a:"Per Staub-Bisang et al. (2022) impact investing needs: (1) explicit intent to achieve positive eco-social impact, (2) a positive return, and (3) measurable real-economy impact. Buying a green new build = sustainable but NOT impact (impact happened before you). Refurbishing a 'brown' building to be efficient = real, measurable impact.", src: SRC.re(9) + " | " + SRC.re(10) },
+
+  // ---- ESG ratings ----
+  { id:"c77", topic:"esg-ratings", q:"Financial-risk-oriented vs. ethical-ecological ESG rating approaches", a:"Financial-risk-oriented: measures financially MATERIAL ESG risks — the risk ESG issues pose to financial performance (financial materiality). Ethical-ecological: measures the company's environmental & social IMPACT (eco-social materiality). MOST ESG ratings follow the financial-risk-oriented approach.", src: SRC.esgr(14) + " | " + SRC.ex24(5) },
+  { id:"c78", topic:"esg-ratings", q:"What do MSCI, Sustainalytics and Inrate each measure?", a:"MSCI: a company's resilience to financially material ESG risks (financial materiality). Sustainalytics: exposure to industry-specific material ESG risks and how well they are managed (risk). Inrate: the positive AND negative IMPACT of a company on environment & society (eco-social impact).", src: SRC.esgr(16) },
+  { id:"c79", topic:"esg-ratings", q:"«Financially material ESG risks» — what do agencies mean?", a:"Those ESG risks that can have a material impact on the financial success/enterprise value of a company. Selected via tools like MSCI's ESG Industry Materiality Map (3 pillars → 10 themes → 33 key issues), weighted by industry.", src: SRC.esgr(18) + " | " + SRC.ex24(5) },
+  { id:"c80", topic:"esg-ratings", q:"The ESG rating model framework (5 steps)", a:"1. Select ESG criteria. 2. Weight them (by industry). 3. Measure/assess via ESG indicators. 4. Aggregate into E, S and G sub-ratings. 5. Normalize relative to industry peers → final rating AAA (best) to CCC (worst). Crucial: ratings are RELATIVE to industry peers, not absolute.", src: SRC.esgr(20) + " | " + SRC.esgr(22) },
+  { id:"c81", topic:"esg-ratings", q:"Why do ESG ratings differ across agencies?", a:"They use different definitions/objectives (financial vs. impact materiality), select different criteria, weight them differently, use different data and proprietary models, and an ESG rating is ultimately the subjective opinion of the agency — not based on a single accepted standard.", src: SRC.esgr(23) + " | " + SRC.ex25(5) },
+  { id:"c82", topic:"esg-ratings", q:"What type of investor uses financial-risk-oriented ESG ratings, and why?", a:"Mainstream/financially-motivated investors and capital providers who care about risk-adjusted returns — they use these ratings to assess the financially material ESG risks that could affect a company's enterprise value / financial performance, not its eco-social impact.", src: SRC.esgr(14) + " | " + SRC.ex25(5) },
+
+  // ---- Controversies ----
+  { id:"c83", topic:"controversies", q:"Controversial products vs. controversial business practices", a:"Controversial products: products deemed controversial due to impact on consumers/society or ethical concerns (e.g. tobacco, weapons). Controversial business practices: HOW a company conducts business — practices seen as unethical or illegal (fraud, bribery, discrimination, harmful production; or legal-but-contested like animal testing).", src: SRC.esgr(25) + " | " + SRC.ex24(5) },
+  { id:"c84", topic:"controversies", q:"Relevant laws/regulations and international norms for business practices", a:"Laws/regulations: new Swiss supply-chain due-diligence law (Responsible Business Initiative); EU Corporate Sustainability Due Diligence law. International norms: UN Global Compact (UNGC); OECD Guidelines for Multinational Enterprises; ILO international labour standards.", src: SRC.esgr(25) },
+  { id:"c85", topic:"controversies", q:"How can violating norms/standards become FINANCIALLY relevant?", a:"Operational risk (accidents from non-compliance, e.g. Deepwater Horizon); reputational risk (consumers avoid products, e.g. VW; harder recruiting); legal/regulatory risk (heavy fines e.g. Holcim, loss of licence to operate e.g. Glencore). → substantial loss of reputation, fines, lost licence, operational risk.", src: SRC.esgr(30) + " | " + SRC.ex24(5) },
+  { id:"c86", topic:"controversies", q:"Why might controversial practices NOT always be financially material? (2 reasons)", a:"Evidence is mixed: for some markets/firms a controversy has little or even no negative stock effect (e.g. weak/positive effects found for German & Swiss discrimination cases). Reasons: markets may already price it in or see it as immaterial to value; effects vary by jurisdiction, sector and whether consumers/regulators actually react.", src: SRC.esgr(29) + " | " + SRC.ex25(5) },
+  { id:"c87", topic:"controversies", q:"Main challenge in evaluating alignment with the UN Global Compact?", a:"Assessment relies on disclosure and judgement: norms are broad/qualitative, data is often self-reported and unverified, and agencies differ on what counts as a 'violation' — so it is hard to objectively and comparably determine whether a company actually complies.", src: SRC.esgr(16) + " | " + SRC.esgr(25) + " | " + SRC.ex25(5) },
+
+  // ---- Climate risk ----
+  { id:"c88", topic:"climate-risk", q:"Physical vs. transition climate risk", a:"Physical risk: damage/disruption from the physical effects of climate change (e.g. floods, rising temperatures, less snow, polluted/scarce water). Transition risk: risks from the move to a low-carbon economy — policy, regulation, technology, market & demand shifts (e.g. CO₂ tax, EV subsidies, changing demand for sustainable products).", src: SRC.rm(17) + " | " + SRC.ex24(6) + " | " + SRC.ex25(6) },
+  { id:"c89", topic:"climate-risk", q:"FINMA's view: is climate risk a new risk category?", a:"No. Per FINMA, climate-related financial risks can be classified within the classic risk categories (credit, market, insurance, operational) — so climate change is a new RISK DRIVER, not a new risk category.", src: SRC.rm(14) },
+  { id:"c90", topic:"climate-risk", q:"Classify these as transition or physical: CO₂-tax rise, less winter snow, EV subsidies, polluted water, demand for sustainable products, rising temperatures", a:"Transition: increased CO₂ tax; increased EV subsidies; increased demand for sustainable products. Physical: less snow in winter; polluted drinking water; rising temperatures.", src: SRC.rm(17) + " | " + SRC.ex24(6) },
+  { id:"c91", topic:"climate-risk", q:"How can «increased demand for sustainable products» materialise as a risk?", a:"It is a transition risk: if the company fails to offer such products to meet the shift in demand (a risk-management gap), its revenue is hit — affecting the income statement / financial results.", src: SRC.ex24(6) },
+  { id:"c92", topic:"climate-risk", q:"IPCC definition of «risk»", a:"The potential for adverse consequences for human or ecological systems. In a climate context, risk arises both from the impacts of climate change AND from human responses to it — affecting lives, livelihoods, health, economic/social/cultural assets, infrastructure, services, ecosystems and species.", src: SRC.rm(18) },
+
+  // ---- Scenario analysis ----
+  { id:"c93", topic:"scenario", q:"Common risk-assessment tools used for sustainability/climate risk", a:"Scenario analysis (alternative futures); stress tests (resilience to extreme shocks, e.g. GDP −8% & energy +100%); simulation analysis (e.g. Monte Carlo — probabilistic uncertainty); sensitivity analysis (small parameter changes); risk matrix (probability vs. impact).", src: SRC.rm(32) + " | " + SRC.ex24(6) },
+  { id:"c94", topic:"scenario", q:"Exploratory vs. normative scenarios", a:"Exploratory: «What could happen?» — start from the present and project plausible futures/outcomes. Normative: «How can a desired future be achieved?» — start from a target outcome and work backwards to the pathway. (Example normative: a net-zero-by-2050 target, deriving the actions/policies needed.)", src: SRC.rm(35) + " | " + SRC.ex25(6) },
+  { id:"c95", topic:"scenario", q:"Key considerations when selecting a scenario for analysis", a:"Define operational boundary (physical & transition); choose relevant risks; scope/areas of focus; time horizon; number of scenarios; and the SOURCE of the scenarios (e.g. IPCC, IEA, NGFS). Then run the risk assessment, refine, and integrate into reporting/disclosure.", src: SRC.rm(33) + " | " + SRC.ex25(6) },
+  { id:"c96", topic:"scenario", q:"Scenario sources & frameworks: IEA, IPCC (RCP/SSP), NGFS", a:"IEA: scenarios by different POLICY outcomes. IPCC: by atmospheric GHG concentration — RCPs (Representative Concentration Pathways), replaced by SSPs (Shared Socioeconomic Pathways) in the 6th assessment. NGFS: Network for Greening the Financial System scenarios for the financial sector.", src: SRC.rm(35) + " | " + SRC.rm(39) + " | " + SRC.rm(41) },
+  { id:"c97", topic:"scenario", q:"Challenges of climate scenario analysis", a:"Lack of guidance/best practice; need a wider range of complementary scenarios; communicating the inherent uncertainty of climate scenarios; and limited customization/flexibility — off-the-shelf scenarios often don't fit a firm's specifics and are hard to adapt.", src: SRC.rm(42) },
+
+  // ---- Risk management & lenders ----
+  { id:"c98", topic:"risk-mgmt", q:"Fields of action for lenders regarding sustainable financing", a:"Risk side: exclusion (don't finance certain firms/sectors); pricing-in sustainability risks (risk-adjusted pricing via ESG ratings/KPIs). Opportunity side: financing sustainability solutions; financing the sustainability transformation; promoting local small companies/start-ups. Plus support without direct financing (e.g. consulting).", src: SRC.rm(8) },
+  { id:"c99", topic:"risk-mgmt", q:"Key take-aways from the IFZ climate-risk study (Hunziker et al. 2022)", a:"Climate change is NOT just an emerging risk — it costs already today (2/3 of firms hit by higher raw-material costs; 1/2 by higher production costs; delivery delays common). There is disagreement on relevance (boards/risk mgmt rate it high, management lower). And there's a lack of data and expertise — >1/3 don't assess climate risk at all.", src: SRC.rm(28) + " | " + SRC.rm(29) + " | " + SRC.rm(30) },
+  { id:"c100", topic:"risk-mgmt", q:"What might a lender ask for before lending to a climate-exposed firm (e.g. AlpsTech)?", a:"Evidence of climate-risk management: a risk assessment / scenario analysis of physical & transition exposure; sustainability KPIs/targets and reporting; mitigation & adaptation plans; financed-emissions data; and how climate risk is governed. This informs risk-adjusted pricing, exclusion or support.", src: SRC.rm(43) + " | " + SRC.rm(8) },
+];
+
+/* ============================ QUIZ ============================ */
+const QUIZ = [
+  // ----- From the 2024 & 2025 mock exams (open) -----
+  { id:"e01", topic:"intro", type:"open", q:"Exam 2024 · A1: Define «Sustainability» and state what this definition is based on. (2 pts)", sample:"«Development that meets the needs of the present without compromising the ability of future generations to meet their own needs.» — based on the Brundtland Report (1987).", src: SRC.ex24(1) },
+  { id:"e02", topic:"financing", type:"open", q:"Exam 2024 · A1: Name three ways a financing can be considered sustainable (basic financing concept). (6 pts)", sample:"1. The collateral fulfils a sustainability standard.\n2. The act of lending itself is sustainable (e.g. financial inclusion as social impact).\n3. The borrower is / acts sustainably (environmental & social sustainability).", src: SRC.ex24(1) },
+  { id:"e03", topic:"green-bonds", type:"open", q:"Exam 2024 · A2: Describe three features green bonds and conventional bonds have in common. (3 pts)", sample:"Periodic coupons; repaid at maturity; receive a credit rating (credit risk = the company's); purpose is (re-)financing. They are otherwise identically structured to non-green bonds.", src: SRC.ex24(2) },
+  { id:"e04", topic:"green-bonds", type:"open", q:"Exam 2024 · A2: Describe three key differences between green and conventional bonds. (3 pts)", sample:"Use of proceeds restricted to green projects; separate booking/tracking of proceeds; 'green' label; transparency/reporting on use of proceeds; external review (second party opinion).", src: SRC.ex24(2) },
+  { id:"e05", topic:"sustain-bonds", type:"open", q:"Exam 2024 · A2: Describe in brief the main feature of a sustainability bond. (2 pts)", sample:"Proceeds are exclusively applied to a combination of BOTH green AND social projects, aligned with the four core components of both the GBP and SBP.", src: SRC.ex24(2) },
+  { id:"e06", topic:"slb", type:"open", q:"Exam 2024 · A3: Describe three advantages of SLBs from an INVESTOR's perspective. (3 pts)", sample:"Exposure to issuers committing to ESG improvement with a financial consequence (coupon step-up) if missed; access to issuers/sectors not eligible for green bonds; portfolio ESG-signaling/diversification; transparency via reported KPIs/SPTs and external verification.", src: SRC.ex24(3) },
+  { id:"e07", topic:"transition", type:"open", q:"Exam 2024 · A3: Describe the difference between «transition-labelled» and «green-labelled» bonds. (3 pts)", sample:"Green-labelled: finance already-green activities in low-emitting sectors (renewables, green buildings). Transition-labelled: finance the transition of 'brown'/high-emitting industries that must substantially cut emissions toward 2030/net-zero 2050.", src: SRC.ex24(3) },
+  { id:"e08", topic:"eu-taxonomy", type:"open", q:"Exam 2025 · A1: Name and explain one major advantage and one major problem of taxonomies such as the EU Taxonomy. (4 pts)", sample:"Advantage: a common classification creates clarity/comparability and protects against greenwashing. Problem: politicization & disputed inclusions (e.g. gas & nuclear) plus complexity/reporting burden undermine credibility.", src: SRC.ex25(1) },
+  { id:"e09", topic:"financing", type:"open", q:"Exam 2025 · A1: Describe (≤2 sentences) how sustainability might play a different role in the primary vs. the secondary market. (3 pts)", sample:"In the primary market new capital reaches the issuer, so the investment can have additionality (it funds the project). In the secondary market only existing debt changes hands between investors — no new money reaches the company, so there is essentially no additionality.", src: SRC.ex25(1) },
+  { id:"e10", topic:"greenium", type:"open", q:"Exam 2025 · A2: (i) How is a green bond premium defined and (ii) give two reasons for its existence. (3 pts)", sample:"(i) The yield differential at issuance between a green bond and an otherwise identical conventional bond (a lower/negative yield = greenium). (ii) Strong investor demand/oversubscription lets issuers price tighter; a broader sustainability-sensitive investor base; reputation/pro-environmental preference.", src: SRC.ex25(2) },
+  { id:"e11", topic:"slb", type:"open", q:"Exam 2025 · A3: Describe three advantages of SLBs from a CORPORATION's perspective. (3 pts)", sample:"Flexible use of proceeds (vs. green bonds); signal ESG commitment; begin measuring ESG metrics/understand own ESG risks; diversify/enlarge the investor base; potentially lower financing costs; reputation gain.", src: SRC.ex25(3) },
+  { id:"e12", topic:"esg-ratings", type:"open", q:"Exam 2025 · A5: What type of investors typically uses financial-risk-oriented ESG ratings, and why? (2 pts)", sample:"Mainstream/financially-motivated investors and capital providers — to assess the financially material ESG risks that could affect a company's enterprise value and risk-adjusted returns (financial materiality), rather than its eco-social impact.", src: SRC.ex25(5) },
+  { id:"e13", topic:"controversies", type:"open", q:"Exam 2025 · A5: Why might controversial business practices NOT always have a material financial impact? Name two reasons. (2 pts)", sample:"Markets may already price the issue in, or judge it immaterial to value; and the effect varies by jurisdiction/sector and on whether consumers, regulators or investors actually react (evidence is mixed — e.g. weak/positive effects for some German & Swiss cases).", src: SRC.ex25(5) },
+  { id:"e14", topic:"scenario", type:"open", q:"Exam 2025 · A6: Describe (i) an example of a normative scenario and (ii) what you derive from a normative scenario analysis. (2 pts)", sample:"(i) A target-driven scenario such as 'reach net-zero by 2050' (or limit warming to 1.5°C). (ii) You work backwards from the desired future to derive the pathway, policies and actions needed to achieve it.", src: SRC.ex25(6) },
+  { id:"e15", topic:"climate-risk", type:"open", q:"Exam 2025 · A6: Explain the difference between transition and physical risks. (2 pts)", sample:"Physical risk = harm from the physical effects of climate change (floods, heat, drought). Transition risk = risk from the shift to a low-carbon economy — policy, regulation, technology, market and demand changes (e.g. CO₂ tax, EV subsidies).", src: SRC.ex25(6) },
+
+  // ----- True / False (from exams) -----
+  { id:"e16", topic:"slb", type:"mcq", q:"True or false: There are globally binding regulations for issuers of SLBs.", options:["True","False"], correct:1, src: SRC.ex24(3), explain:"False — there are NO globally binding regulations; the ICMA SLB Principles are voluntary." },
+  { id:"e17", topic:"slb", type:"mcq", q:"True or false: Unlike for green bonds, the ICMA SLB Principles do NOT require issuers to carry out an independent external review.", options:["True","False"], correct:1, src: SRC.ex24(3) + " | " + SRC.debt2(37), explain:"False — the SLBP do require verification: external verification of the SPTs is necessary post-issuance (pre-issuance recommended)." },
+  { id:"e18", topic:"transition", type:"mcq", q:"True or false: Transition bonds are typically issued by companies in «brown» industries.", options:["True","False"], correct:0, src: SRC.ex24(3) + " | " + SRC.debt2(45), explain:"True — they target hard-to-abate 'brown' sectors (cement, oil & gas, steel) with a credible decarbonization strategy." },
+  { id:"e19", topic:"esg-screened", type:"mcq", q:"True or false: ESG-screened bonds are special securities where issuers are screened on «green or social projects».", options:["True","False"], correct:1, src: SRC.ex24(3) + " | " + SRC.debt2(57), explain:"False — ESG screening is a PROCESS that screens ISSUERS on ESG criteria; it is not a use-of-proceeds (project) instrument." },
+  { id:"e20", topic:"greenium", type:"mcq", q:"True or false: One reason corporations (e.g. Baloise) issue green bonds is the potential benefit of a green bond premium.", options:["True","False"], correct:0, src: SRC.ex25(2) + " | " + SRC.helvetia(16), explain:"True — a greenium (lower refinancing cost) is an explicit part of Baloise's green bond rationale." },
+  { id:"e21", topic:"green-bonds", type:"mcq", q:"True or false: ICMA is a self-regulatory organization that releases BINDING guidelines for green bond issuers.", options:["True","False"], correct:1, src: SRC.ex25(2) + " | " + SRC.debt1(15), explain:"False — the ICMA Green Bond Principles are VOLUNTARY guidelines, not binding." },
+  { id:"e22", topic:"green-bonds", type:"mcq", q:"True or false: The ICMA GBP consist of four core components plus two BINDING recommendations.", options:["True","False"], correct:1, src: SRC.ex25(2) + " | " + SRC.debt1(19), explain:"False — there are four core components and two recommendations, but the recommendations are NOT binding (the whole framework is voluntary)." },
+  { id:"e23", topic:"green-bonds", type:"mcq", q:"True or false: Special-purpose debt instruments can support the transition to «net-zero» as outlined in the Paris Agreement.", options:["True","False"], correct:0, src: SRC.ex25(2) + " | " + SRC.debt1(6), explain:"True — financing the net-zero transition is a core rationale for sustainable debt instruments." },
+  { id:"e24", topic:"transition", type:"mcq", q:"True or false: Transition bonds are often used in hard-to-abate sectors.", options:["True","False"], correct:0, src: SRC.ex25(3) + " | " + SRC.debt2(45), explain:"True — cement, steel, oil & gas, aviation, shipping etc." },
+  { id:"e25", topic:"gss-market", type:"mcq", q:"True or false: Social bonds and sustainability bonds are still niche products compared to the overall fixed-income market.", options:["True","False"], correct:0, src: SRC.ex25(3) + " | " + SRC.debt2(53), explain:"True — green bonds dominate GSS+; social and sustainability bonds remain niche, and SLB/transition are negligible by volume." },
+  { id:"e26", topic:"esg-screened", type:"mcq", q:"True or false: ESG-screened bonds can only be issued by corporations with high ESG ratings.", options:["True","False"], correct:1, src: SRC.ex25(3) + " | " + SRC.debt2(57), explain:"False — screening is applied by investors at portfolio level; it is not an issuance condition on the issuer." },
+  { id:"e27", topic:"esg-ratings", type:"mcq", q:"True or false: ESG ratings that follow a similar rating approach typically do NOT differ from each other.", options:["True","False"], correct:1, src: SRC.ex24(5) + " | " + SRC.esgr(23), explain:"False — even similar approaches differ due to different criteria, weights, data and proprietary models." },
+  { id:"e28", topic:"esg-ratings", type:"mcq", q:"True or false: ESG ratings are based on broadly accepted standards.", options:["True","False"], correct:1, src: SRC.ex24(5) + " | " + SRC.ex25(5), explain:"False — there is no single accepted standard; a rating is the subjective opinion of the agency." },
+  { id:"e29", topic:"esg-ratings", type:"mcq", q:"True or false: An ESG rating is the subjective opinion of a rating agency.", options:["True","False"], correct:0, src: SRC.ex25(5) + " | " + SRC.esgr(16), explain:"True — agencies themselves state ratings are opinions, interpreted relative to industry peers." },
+  { id:"e30", topic:"esg-ratings", type:"mcq", q:"True or false: Physical climate risks are NOT considered by ESG ratings.", options:["True","False"], correct:0, src: SRC.ex25(5) + " | " + SRC.esgr(14), explain:"True (per the exam framing) — financial-risk-oriented ESG ratings focus on financially material, mostly transition-type ESG issues and do not systematically capture physical climate risk." },
+
+  // ----- Single-choice (from exams) -----
+  { id:"e31", topic:"re-relevance", type:"mcq", q:"Exam 2024 · A4: What proportion of natural resources does real estate + buildings consume worldwide?", options:["10%","30%","50%","70%"], correct:2, src: SRC.ex24(4) + " | " + SRC.re(30), explain:"~50% of total natural resource consumption." },
+  { id:"e32", topic:"re-relevance", type:"mcq", q:"Exam 2024 · A4: What proportion of CO₂ is emitted worldwide by real estate + buildings?", options:["20%","40%","60%","80%"], correct:1, src: SRC.ex24(4) + " | " + SRC.re(30), explain:"~40% of CO₂ emissions." },
+  { id:"e33", topic:"re-relevance", type:"mcq", q:"Exam 2024 · A4: Real estate + buildings consume approximately what share of final energy consumption worldwide?", options:["1/5","1/3","1/2","2/3"], correct:1, src: SRC.ex24(4) + " | " + SRC.re(30), explain:"~1/3 of final energy consumption." },
+  { id:"e34", topic:"re-relevance", type:"mcq", q:"Exam 2024 · A4: Global building floor area grew ~23% (2010–2018) at ~2.5%/yr — doubling in about how many years?", options:["18","28","38","48"], correct:1, src: SRC.ex24(4) + " | " + SRC.re(30), explain:"~28 years (rule of 72 ≈ 72/2.5)." },
+  { id:"e35", topic:"re-relevance", type:"mcq", q:"Exam 2024 · A4: Which statement about the concept of sustainability is NOT correct?", options:["It has been around for over 300 years","It originates in the overexploitation of forests","In forestry it means cutting no more wood than can regrow","It has only existed since Chernobyl (1986)"], correct:3, src: SRC.ex24(4) + " | " + SRC.re(27), explain:"The concept is centuries old (forestry origin); it did not begin with Chernobyl." },
+  { id:"e36", topic:"building-std", type:"mcq", q:"Exam 2024 · A4: Which Swiss building standard most comprehensively reflects sustainability?", options:["Minergie (-P/-A)","Minergie (-P/-A)-ECO","SNBS","GEAK"], correct:2, src: SRC.ex24(4) + " | " + SRC.re(44), explain:"SNBS covers all three pillars (society, economy, environment); Minergie/GEAK are energy-focused." },
+  { id:"e37", topic:"green-premium", type:"mcq", q:"Exam · A4: In ln(Price)=β0+β1·MINERGIE+…, β1=0.045 (p<0.01). Approx. price mark-up for a certified building?", options:["≈ 0.45%","≈ 4.5%","≈ 45%","Cannot be determined"], correct:1, src: SRC.ex25(4) + " | " + SRC.re(59), explain:"In a log-linear model the dummy coefficient ≈ the % mark-up → ~4.5%." },
+  { id:"e38", topic:"gb-benefits", type:"mcq-multi", q:"Exam 2025 · A4: Which statement(s) about Kats' (2003) «green bill» study are correct? (select all)", options:["Energy savings are ~10× the productivity gains","Total financial benefits are ~10× the initial design & construction costs"], correct:[1], src: SRC.ex25(4) + " | " + SRC.re(75), explain:"It's the reverse for the first: productivity gains are ~10× the energy savings. The total benefits being ~10× initial costs is correct." },
+  { id:"e39", topic:"mortgages", type:"mcq-multi", q:"Exam 2025 · A4: Which are Scope 3 emissions for a bank? (select all)", options:["Emissions caused by financing & investments","Purchase of district heating/cooling","Electricity generation in bank branches","Commuting emissions"], correct:[0,3], src: SRC.ex25(4) + " | " + SRC.re(17), explain:"Financed emissions and commuting are Scope 3. District heating/cooling purchased = Scope 2; own electricity generation = Scope 1." },
+  { id:"e40", topic:"gb-benefits", type:"mcq-multi", q:"Exam 2025 · A4: Which are TRUE about sustainable vs. conventional real estate? (select all)", options:["Lower vacancy risk","Always higher construction costs","Lower risk premiums","Healthier & more productive environment for users"], correct:[0,2,3], src: SRC.ex25(4) + " | " + SRC.re(77), explain:"Construction costs are NOT always higher (evidence mixed). Lower vacancy risk, lower risk premiums and healthier environments are supported." },
+
+  // ----- Risk/return valuation (from both exams) -----
+  { id:"e41", topic:"gb-benefits", type:"mcq", q:"Exam · A4: A decrease in operating costs Ct (more efficient facility management) — the property value V…", options:["Goes up","Goes down","Stays the same"], correct:0, src: SRC.ex24(4) + " | " + SRC.re(72), explain:"Lower Ct → higher net income → V ↑." },
+  { id:"e42", topic:"gb-benefits", type:"mcq", q:"Exam · A4: An increase in future rent growth Rt — the property value V…", options:["Goes up","Goes down","Stays the same"], correct:0, src: SRC.ex24(4) + " | " + SRC.re(72), explain:"Higher rents → V ↑." },
+  { id:"e43", topic:"gb-benefits", type:"mcq", q:"Exam · A4: An increased risk premium RP (stricter construction regulations) — the property value V…", options:["Goes up","Goes down","Stays the same"], correct:1, src: SRC.ex24(4) + " | " + SRC.re(72), explain:"Higher RP → higher gross cap rate → V ↓." },
+  { id:"e44", topic:"gb-benefits", type:"mcq", q:"Exam · A4: Interest rates increase further — the property value V…", options:["Goes up","Goes down","Stays the same"], correct:1, src: SRC.ex24(4) + " | " + SRC.re(72), explain:"Higher risk-free rate → higher discount/cap rate → V ↓." },
+  { id:"e45", topic:"climate-risk", type:"mcq-multi", q:"Exam · A6: Which of these are TRANSITION risks? (select all)", options:["Increased demand for sustainable products","Increasing temperature over the years","Less snow in winter","Increased CO₂-tax","Polluted drinking water","Increased subsidies for electric cars"], correct:[0,3,5], src: SRC.ex24(6) + " | " + SRC.rm(17), explain:"Transition: demand shift, CO₂ tax, EV subsidies. Physical: rising temperature, less snow, polluted water." },
+
+  // ----- Extra MCQs derived from the slides -----
+  { id:"n01", topic:"intro", type:"mcq", q:"The Brundtland Report is associated with which concept?", options:["The EU Taxonomy","The definition of sustainable development","The Green Bond Principles","Double materiality"], correct:1, src: SRC.intro(10), explain:"The Brundtland Report (1987) gave the classic definition of sustainable development." },
+  { id:"n02", topic:"intro", type:"mcq", q:"How many UN Sustainable Development Goals are there?", options:["8","12","17","21"], correct:2, src: SRC.intro(11), explain:"17 SDGs, adopted in 2015 within the 2030 Agenda." },
+  { id:"n03", topic:"intro", type:"mcq", q:"The Paris Agreement aims to limit warming to…", options:["Well below 2°C, pursuing 1.5°C","Exactly 3°C","Below 0.5°C","No specific target"], correct:0, src: SRC.intro(13), explain:"Well below 2°C above pre-industrial levels, pursuing efforts toward 1.5°C." },
+  { id:"n04", topic:"green-bonds", type:"mcq", q:"How many core components do the ICMA Green Bond Principles have?", options:["2","4","5","10"], correct:1, src: SRC.debt1(18), explain:"Four core components (+ two recommendations)." },
+  { id:"n05", topic:"slb", type:"mcq", q:"How many core components do the ICMA Sustainability-Linked Bond Principles have?", options:["3","4","5","6"], correct:2, src: SRC.debt2(37), explain:"Five core components (KPIs, SPTs, bond characteristics, reporting, verification)." },
+  { id:"n06", topic:"slb", type:"mcq", q:"The most common consequence if an SLB issuer misses its SPT is a…", options:["Coupon step-down","Coupon step-up","Mandatory redemption","Loss of the green label"], correct:1, src: SRC.debt2(35), explain:"A coupon step-up (higher interest) is the most common consequence." },
+  { id:"n07", topic:"slb", type:"mcq", q:"Who issued the first sustainability-linked bond, and when?", options:["EIB, 2007","Enel, 2019","Novartis, 2020","Holcim, 2020"], correct:1, src: SRC.debt2(35), explain:"Enel issued the first SLB in 2019 (the first green bond was the EIB in 2007)." },
+  { id:"n08", topic:"green-bonds", type:"mcq", q:"Blue bonds are best described as…", options:["A type of social bond","A subset of green bonds for ocean projects","A sustainability-linked bond","A conventional bond"], correct:1, src: SRC.debt1(23), explain:"Blue bonds are a subset of green bonds financing ocean-based / Blue Economy projects (SDG 14)." },
+  { id:"n09", topic:"esg-ratings", type:"mcq", q:"Most ESG ratings follow which approach?", options:["Ethical-ecological (impact)","Financial-risk-oriented","Purely governance-based","Carbon-only"], correct:1, src: SRC.esgr(14), explain:"Most ratings measure financially material ESG risks (financial materiality)." },
+  { id:"n10", topic:"esg-ratings", type:"mcq", q:"MSCI ESG ratings are interpreted…", options:["On an absolute scale","Relative to industry peers","Only vs. the S&P 500","Independently of industry"], correct:1, src: SRC.esgr(22), explain:"Ratings are explicitly relative to industry peers (AAA best to CCC worst)." },
+  { id:"n11", topic:"esg-ratings", type:"mcq", q:"Inrate's ESG Impact Ratings primarily measure…", options:["Financial materiality of ESG risk","A company's positive & negative impact on environment & society","Credit risk","Governance only"], correct:1, src: SRC.esgr(16), explain:"Inrate measures eco-social IMPACT, unlike the financial-risk-oriented MSCI/Sustainalytics approach." },
+  { id:"n12", topic:"climate-risk", type:"mcq", q:"According to FINMA, climate risk is…", options:["A brand-new risk category","A new risk driver within existing categories","Not relevant to banks","Only an operational risk"], correct:1, src: SRC.rm(14), explain:"FINMA: a new risk DRIVER, captured within classic categories (credit, market, insurance, operational)." },
+  { id:"n13", topic:"transition", type:"mcq", q:"When were the ICMA Climate Transition Bond Guidelines published?", options:["2007","2019","November 2025","2030"], correct:2, src: SRC.debt2(48), explain:"Published November 2025; CTBs follow the GBP's four core components with adaptations." },
+  { id:"n14", topic:"gss-market", type:"mcq", q:"Which label makes up the majority of the GSS+ market by volume?", options:["Social bonds","Sustainability bonds","Green bonds","Sustainability-linked bonds"], correct:2, src: SRC.debt2(53), explain:"Green bonds are ~62% of GSS+; GSS together is ~95% of GSS+." },
+  { id:"n15", topic:"gss-market", type:"mcq", q:"Which region has led GSS+ issuance every year since 2017?", options:["North America","APAC","Europe","Middle East & Africa"], correct:2, src: SRC.debt2(54), explain:"Europe leads by far (~47%), APAC second (~24%)." },
+  { id:"n16", topic:"building-std", type:"mcq", q:"GRESB evaluates sustainability at the level of…", options:["Individual properties only","Real estate companies & funds (portfolio level)","Individual mortgages","Countries"], correct:1, src: SRC.re(50), explain:"GRESB benchmarks portfolios/funds; LEED & BREEAM focus on individual buildings." },
+  { id:"n17", topic:"building-std", type:"mcq", q:"GEAK assigns how many energy classes?", options:["3 (A–C)","5 (A–E)","7 (A–G)","10 (A–J)"], correct:2, src: SRC.re(43), explain:"Seven classes A–G, based on envelope efficiency, total energy efficiency and direct CO₂ emissions." },
+  { id:"n18", topic:"green-premium", type:"mcq", q:"The hedonic method is used to…", options:["Set coupon rates on bonds","Make heterogeneous goods comparable and price each attribute","Calculate Scope 3 emissions","Rate ESG controversies"], correct:1, src: SRC.re(56), explain:"It uses multiple regression to estimate the implicit price of each property attribute, incl. 'green'." },
+  { id:"n19", topic:"scenario", type:"mcq", q:"RCPs (IPCC) were replaced in the 6th assessment report by…", options:["NGFS scenarios","SSPs (Shared Socioeconomic Pathways)","IEA policy scenarios","TCFD scenarios"], correct:1, src: SRC.rm(41), explain:"SSPs replaced RCPs with the sixth IPCC progress report." },
+  { id:"n20", topic:"scenario", type:"mcq", q:"A stress test is best described as assessing…", options:["Probabilistic uncertainty via random sampling","Resilience to an extreme adverse shock","A small change in one variable","The probability vs. impact matrix"], correct:1, src: SRC.rm(32), explain:"Stress test = resilience to extreme shocks (e.g. GDP −8% & energy +100%). Monte Carlo = probabilistic; sensitivity = small parameter change." },
+  { id:"n21", topic:"double-mat", type:"mcq", q:"Financial materiality (in double materiality) captures…", options:["The company's impact on society/environment","The impact of ESG/climate factors on the company's success","Only carbon emissions","Only governance issues"], correct:1, src: SRC.intro(23), explain:"Financial materiality = outside-in (impact ON the company); impact materiality = inside-out (company's impact on the world)." },
+  { id:"n22", topic:"double-mat", type:"mcq", q:"An activity has «additionality» when…", options:["It would have happened anyway","The intervention is what causes it to happen vs. the baseline","It is profitable","It is certified green"], correct:1, src: SRC.intro(26), explain:"Additionality = impact with intervention minus the baseline without it." },
+  { id:"n23", topic:"reg-greenwash", type:"mcq", q:"The OECD Guidelines for Multinational Enterprises are…", options:["Legally binding on all firms","Recommendations to MNEs (morally, not legally, binding) with National Contact Points","An ICMA bond standard","A building certification"], correct:1, src: SRC.intro(48), explain:"Recommendations to MNEs — 'morally binding'; each country must set up a National Contact Point (a legal obligation)." },
+  { id:"n24", topic:"financing", type:"mcq", q:"On the secondary market, the price of debt is…", options:["Fixed at issue until repayment","Fluctuating depending on various factors","Always at par","Set by the borrower"], correct:1, src: SRC.intro(30), explain:"Secondary-market prices fluctuate; primary-market conditions are fixed at issuance." },
+  { id:"n25", topic:"mortgages", type:"mcq", q:"Under Swiss Basel III (from 2025), banks need significantly more equity when the LTV exceeds…", options:["40%","60%","80%","90%"], correct:1, src: SRC.re(20), explain:"Above 60% LTV costs rise sharply, passed on as higher mortgage rates." },
+  { id:"n26", topic:"controversies", type:"mcq", q:"Which is an example of a controversial PRODUCT (vs. a practice)?", options:["Bribery","Discrimination","Tobacco","Fraud"], correct:2, src: SRC.esgr(25), explain:"Tobacco is a controversial product; bribery, discrimination and fraud are controversial business practices." },
+  { id:"n27", topic:"esg-screened", type:"mcq", q:"Excluding issuers that fail the UN Global Compact is an example of…", options:["Values-based exclusion","Norms-based exclusion","Best-in-class selection","Positive screening"], correct:1, src: SRC.debt2(58), explain:"UN Global Compact = international norm → norms-based exclusion. Tobacco/weapons = values-based." },
+  { id:"n28", topic:"social-bonds", type:"mcq", q:"The main difference between the ICMA SBP and GBP is…", options:["The number of core components","The project objective (social vs. environmental)","Whether external review is needed","Whether they are binding"], correct:1, src: SRC.debt1(26), explain:"Same structure; the difference is social vs. environmental project objectives." },
+  { id:"n29", topic:"gb-benefits", type:"mcq", q:"Per Kats (2003), productivity benefits of green measures are roughly…", options:["Equal to energy savings","10× the energy savings","Half the energy savings","Irrelevant"], correct:1, src: SRC.re(75), explain:"Productivity gains ≈ 10× the energy savings; total benefits ≈ 10× initial costs." },
+  { id:"n30", topic:"risk-mgmt", type:"mcq", q:"«Exclusion» as a lender field of action means…", options:["Charging a green discount","Explicitly NOT financing certain companies/sectors/property types","Financing start-ups","Consulting on sustainability"], correct:1, src: SRC.rm(8), explain:"Exclusion = refusing to finance certain firms/sectors; it sits on the risk side of lender actions." },
+];
+
+/* ============================ FORMULAS (light — SF is framework-heavy) ============================ */
+const FORMULAE = [
+  { id:"f1", title:"Green bond premium (greenium)", formula:"Greenium = Yield(conventional) − Yield(green), otherwise identical bonds", note:"A positive value (green yields less) means cheaper financing. Evidence: ~0–19 bps globally, ~12 bps average; CHF greenium has declined.", src: SRC.debt1(21) + " | " + SRC.debt1(22) },
+  { id:"f2", title:"Additionality", formula:"Additionality = Impact WITH intervention − Impact WITHOUT intervention (baseline)", note:"The basis for distinguishing true impact from mere alignment; primary-market financing can be additional, secondary-market trading generally is not.", src: SRC.intro(26) },
+  { id:"f3", title:"Hedonic regression (log-linear)", formula:"ln(Price) = β0 + β1·MINERGIE + β2·living_space + … + ε", note:"With a green dummy, the coefficient β1 ≈ the % price mark-up. e.g. β1 = 0.045 → ~4.5% premium for a certified building.", src: SRC.re(57) + " | " + SRC.re(59) },
+  { id:"f4", title:"Property valuation (earnings-value / cap rate)", formula:"V = Rt ÷ (i_gross − g)   ;   i_gross = rf + RP", note:"V = current earnings value; Rt = gross yield (net rents); g = rent growth; i_gross = gross cap rate = risk-free + risk premium. Green buildings raise V via Ct↓, Rt↑, or RP↓.", src: SRC.re(71) + " | " + SRC.re(72) },
+  { id:"f5", title:"Three value channels of a green building", formula:"V ↑  ⇐  (1) Ct ↓   or   (2) Rt ↑   or   (3) RP ↓ ⇒ i_gross ↓", note:"Decreased operating costs, increased net rents, or a lower risk premium each increase value V.", src: SRC.re(72) },
+  { id:"f6", title:"Greenhouse-gas scopes (a bank)", formula:"Total = Scope 1 (own direct) + Scope 2 (purchased energy) + Scope 3 (value chain, incl. financed emissions)", note:"For banks, Scope 3 financed emissions dominate; district heating/cooling = Scope 2; own branch generation = Scope 1; commuting = Scope 3.", src: SRC.re(17) },
+  { id:"f7", title:"Kats (2003) «green bill» rule of thumb", formula:"Productivity gains ≈ 10 × energy savings   ;   Total benefits ≈ 10 × initial costs", note:"20-yr NPV ≈ +489 USD/sqm after the green cost premium. Construction-cost premium: basic +2–3%, higher +5–7.5%, zero-carbon up to +12.5%.", src: SRC.re(75) + " | " + SRC.re(70) },
+];
+
+/* ============================ GLOSSARY / FRAMEWORKS ============================ */
+const GLOSSARY = [
+  { id:"g01", cat:"Frameworks & Principles", term:"ICMA GBP — Green Bond Principles", def:"Voluntary ICMA guidelines for green bonds: 4 core components (use of proceeds; project evaluation & selection; management of proceeds; reporting) + 2 recommendations (framework; external review).", src: SRC.debt1(15) },
+  { id:"g02", cat:"Frameworks & Principles", term:"ICMA SBP — Social Bond Principles", def:"Voluntary guidelines for social bonds; same structure as the GBP, differing mainly in the project objective (social, benefiting a target population).", src: SRC.debt1(24) },
+  { id:"g03", cat:"Frameworks & Principles", term:"ICMA SBG — Sustainability Bond Guidelines", def:"Guidelines for bonds combining green AND social projects; align with both GBP and SBP core components.", src: SRC.debt1(28) },
+  { id:"g04", cat:"Frameworks & Principles", term:"ICMA SLBP — Sustainability-Linked Bond Principles", def:"Voluntary guidelines for SLBs with 5 core components: KPIs; SPTs; bond characteristics (step-up); reporting; verification.", src: SRC.debt2(37) },
+  { id:"g05", cat:"Frameworks & Principles", term:"ICMA CTB Guidelines", def:"Climate Transition Bond Guidelines (Nov 2025): use-of-proceeds bonds following the GBP's 4 components (adapted) for climate-transition projects in hard-to-abate sectors.", src: SRC.debt2(48) },
+  { id:"g06", cat:"Frameworks & Principles", term:"CBI / Climate Bonds Standard (CBS)", def:"Climate Bonds Initiative — issues the Climate Bonds Standard, one of the recognized voluntary green-bond labelling schemes alongside ICMA's GBP and the EU Green Bond Standard.", src: SRC.debt1(14) },
+  { id:"g07", cat:"Frameworks & Principles", term:"EU Green Bond Standard (EuGB)", def:"The EU's standard for green bonds — a more regulatory approach to defining a credible green bond.", src: SRC.debt1(14) },
+  { id:"g08", cat:"Regulation & Taxonomy", term:"EU Taxonomy", def:"Classification system listing environmentally sustainable economic activities; aims to create investor security, fight greenwashing and steer capital. Disputed inclusions (gas, nuclear).", src: SRC.intro(15) },
+  { id:"g09", cat:"Regulation & Taxonomy", term:"FINMA Guidance 01/2023", def:"Swiss regulator's stance: climate risk is captured within existing risk categories (credit, market, insurance, operational) — a new risk DRIVER, not a new category.", src: SRC.rm(14) },
+  { id:"g10", cat:"Regulation & Taxonomy", term:"OECD Guidelines for MNEs", def:"Recommendations to multinational enterprises (morally, not legally, binding); each country sets up a National Contact Point. Includes due diligence for responsible corporate lending.", src: SRC.intro(48) },
+  { id:"g11", cat:"Regulation & Taxonomy", term:"UN Global Compact (UNGC)", def:"Broadly accepted international norm for responsible business; used in norms-based exclusion screening. Hard to assess compliance objectively.", src: SRC.debt2(58) + " | " + SRC.esgr(25) },
+  { id:"g12", cat:"Regulation & Taxonomy", term:"Basel III (Swiss, 2025)", def:"From 1 Jan 2025; banks need much more equity above 60% LTV, raising mortgage costs — contributing to a real-estate credit crunch.", src: SRC.re(20) },
+  { id:"g13", cat:"Core Concepts", term:"Brundtland definition", def:"«Development that meets the needs of the present without compromising the ability of future generations to meet their own needs.» (1987).", src: SRC.intro(10) },
+  { id:"g14", cat:"Core Concepts", term:"Double materiality", def:"Financial materiality (outside-in: ESG/climate risk TO the company) + impact materiality (inside-out: company's impact ON society/environment).", src: SRC.intro(23) },
+  { id:"g15", cat:"Core Concepts", term:"Additionality", def:"An activity is additional if the intervention causes it (vs. the baseline). Key to distinguishing true impact from mere alignment.", src: SRC.intro(26) },
+  { id:"g16", cat:"Core Concepts", term:"Greenwashing", def:"Claiming sustainability benefits without substance/additionality — e.g. aligning with SDGs/net-zero labels without real impact.", src: SRC.intro(32) },
+  { id:"g17", cat:"Core Concepts", term:"Greenium", def:"Green bond premium: the yield differential at issuance between a green bond and an identical conventional bond (~0–19 bps; ~12 bps avg).", src: SRC.debt1(21) },
+  { id:"g18", cat:"Core Concepts", term:"GSS / GSS+ / Thematic", def:"GSS = green, social, sustainability bonds. GSS+ = GSS plus SLB & transition. Thematic = green, social, sustainability + SLB (World Bank).", src: SRC.debt2(9) },
+  { id:"g19", cat:"Instruments", term:"Green bond", def:"Use-of-proceeds bond exclusively financing eligible green projects, aligned with the GBP. Earmarked / ring-fenced / impact bond.", src: SRC.debt1(12) },
+  { id:"g20", cat:"Instruments", term:"Social bond", def:"Use-of-proceeds bond financing social projects for a target population, aligned with the SBP.", src: SRC.debt1(24) },
+  { id:"g21", cat:"Instruments", term:"Sustainability bond", def:"Use-of-proceeds bond financing a combination of green AND social projects (GBP + SBP).", src: SRC.debt1(28) },
+  { id:"g22", cat:"Instruments", term:"Sustainability-linked bond (SLB)", def:"General-purpose bond whose coupon is linked to the issuer meeting Sustainability Performance Targets; misses trigger a step-up. Not earmarked.", src: SRC.debt2(35) },
+  { id:"g23", cat:"Instruments", term:"Transition bond", def:"Use-of-proceeds bond funding decarbonization in 'brown'/hard-to-abate sectors with a credible net-zero strategy.", src: SRC.debt2(45) },
+  { id:"g24", cat:"Instruments", term:"Blue bond", def:"Subset of green bonds financing ocean-based / Blue Economy projects (SDG 14).", src: SRC.debt1(23) },
+  { id:"g25", cat:"Instruments", term:"ESG-screened bond", def:"Not an instrument but a process: issuers of bonds are screened on financial + non-financial ESG criteria at portfolio level.", src: SRC.debt2(57) },
+  { id:"g26", cat:"Instruments", term:"KPI / SPT (SLBs)", def:"KPI = the sustainability metric tracked; SPT = the Sustainability Performance Target (the calibrated, ambitious goal for the KPI).", src: SRC.debt2(37) },
+  { id:"g27", cat:"ESG Ratings & Risk", term:"Financial-risk-oriented rating", def:"Measures financially material ESG risk to the company (MSCI, Sustainalytics). Most ratings follow this approach.", src: SRC.esgr(14) },
+  { id:"g28", cat:"ESG Ratings & Risk", term:"Ethical-ecological rating", def:"Measures a company's eco-social IMPACT on environment & society (e.g. Inrate).", src: SRC.esgr(14) },
+  { id:"g29", cat:"ESG Ratings & Risk", term:"Financially material ESG risk", def:"An ESG issue with a material impact on a company's financial success / enterprise value; selected via industry materiality maps.", src: SRC.esgr(18) },
+  { id:"g30", cat:"ESG Ratings & Risk", term:"Physical vs. transition risk", def:"Physical = harm from climate's physical effects (floods, heat). Transition = risk from the shift to a low-carbon economy (policy, tech, market).", src: SRC.rm(17) },
+  { id:"g31", cat:"ESG Ratings & Risk", term:"Scope 1 / 2 / 3", def:"Scope 1 = own direct emissions; Scope 2 = purchased energy; Scope 3 = value chain (for banks: financed emissions dominate).", src: SRC.re(17) },
+  { id:"g32", cat:"ESG Ratings & Risk", term:"TCFD", def:"Task Force on Climate-related Financial Disclosures — source of the risk/opportunity & financial-impact framing and scenario-analysis recommendations.", src: SRC.intro(24) + " | " + SRC.rm(17) },
+  { id:"g33", cat:"ESG Ratings & Risk", term:"NGFS / IEA / IPCC (RCP, SSP)", def:"Scenario sources: NGFS (financial sector), IEA (policy outcomes), IPCC (GHG concentration — RCPs, replaced by SSPs).", src: SRC.rm(35) + " | " + SRC.rm(41) },
+  { id:"g34", cat:"Real Estate", term:"MINERGIE / GEAK / SNBS", def:"MINERGIE = Swiss energy-efficiency standard; GEAK = cantonal energy certificate (classes A–G); SNBS = most comprehensive Swiss standard (all 3 pillars).", src: SRC.re(42) + " | " + SRC.re(43) + " | " + SRC.re(44) },
+  { id:"g35", cat:"Real Estate", term:"LEED / BREEAM / DGNB", def:"International green-building certifications (US, UK, Germany). Property-level labels, unlike portfolio-level GRESB.", src: SRC.re(48) },
+  { id:"g36", cat:"Real Estate", term:"GRESB", def:"Global Real Estate Sustainability Benchmark — rates RE companies/funds at portfolio level (Management 30 / Performance 70 / Development 70).", src: SRC.re(50) },
+  { id:"g37", cat:"Real Estate", term:"Embodied energy («graue Energie»)", def:"Lifecycle GHG emissions of materials & construction (production, transport, disposal) — the growing, unresolved challenge vs. operational emissions.", src: SRC.re(33) },
+  { id:"g38", cat:"Real Estate", term:"Hedonic method", def:"Regression that prices each property attribute (incl. a 'green' dummy) to isolate the green premium, ceteris paribus.", src: SRC.re(56) },
+];
+
+/* ========================================================================
+   Helpers, icons, components
+   ======================================================================== */
+function classNames(...arr){ return arr.filter(Boolean).join(" "); }
+function tagForTopic(id){ const t = TOPICS.find(x=>x.id===id); return t ? t.name : id; }
+function priorityForWeight(w){
+  if (w >= 4) return { label:"High",   tone:"indigo" };
+  if (w === 3) return { label:"Medium", tone:"amber" };
+  return { label:"Low", tone:"slate" };
+}
+const priorityStyles = {
+  indigo: { dot:"bg-[#4F46E5]", chip:"bg-indigo-50 text-indigo-700" },
+  amber:  { dot:"bg-[#D97706]", chip:"bg-amber-50 text-amber-700" },
+  slate:  { dot:"bg-[#64748B]", chip:"bg-slate-100 text-slate-600" },
+};
+
+const Icon = {
+  Flame:   (p) => (<svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>),
+  Search:  (p) => (<svg viewBox="0 0 24 24" width={p.size||16} height={p.size||16} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>),
+  ChevronRight: (p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>),
+  Sparkles:(p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>),
+  BookOpen:(p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>),
+  Trophy:  (p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>),
+  LogOut:  (p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>),
+  User:    (p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>),
+  Leaf:    (p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>),
+  Alert:   (p) => (<svg viewBox="0 0 24 24" width={p.size||14} height={p.size||14} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>),
+};
+
+function ProgressRing({ percent, size=140, stroke=12, color="#059669", label, sub }) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c - (Math.max(0, Math.min(100, percent)) / 100) * c;
+  return (
+    <div className="relative inline-flex items-center justify-center" style={{ width:size, height:size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size/2} cy={size/2} r={r} stroke="rgba(15,23,42,0.06)" strokeWidth={stroke} fill="none" />
+        <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset} className="ring-bar"/>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="font-display text-3xl font-semibold text-slate-900">{Math.round(percent)}%</div>
+        {label && <div className="text-[11px] text-slate-500 mt-0.5">{label}</div>}
+        {sub && <div className="text-[10px] text-slate-400">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Sparkline({ weight, tone="indigo" }) {
+  const w = Math.max(1, Math.min(5, weight));
+  const top=4, bot=22, range = bot-top;
+  const ys = [
+    bot - range * (0.20 + (w-1)*0.06),
+    bot - range * (0.40 + (w-1)*0.05),
+    bot - range * (0.32 + (w-1)*0.08),
+    bot - range * (0.55 + (w-1)*0.06),
+    bot - range * (0.48 + (w-1)*0.08),
+    bot - range * (0.62 + (w-1)*0.07),
+    bot - range * (0.74 + (w-1)*0.05),
+  ];
+  const pts = ys.map((y, i) => `${i * 12 + 2},${y.toFixed(1)}`).join(' ');
+  const colorMap = { indigo:"#4F46E5", amber:"#D97706", slate:"#64748B" };
+  const color = colorMap[tone] || colorMap.indigo;
+  const lastX = 6 * 12 + 2; const lastY = ys[ys.length-1];
+  return (
+    <svg width={78} height={26} viewBox="0 0 78 26" className="overflow-visible">
+      <defs><linearGradient id={`grad-${tone}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.18"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>
+      <polygon points={`2,${bot} ${pts} ${lastX},${bot}`} fill={`url(#grad-${tone})`}/>
+      <polyline fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" points={pts}/>
+      <circle cx={lastX} cy={lastY} r="2.2" fill={color}/>
+    </svg>
+  );
+}
+
+function StreakChip({ value, pulse }) {
+  return (
+    <div className={"inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-100 " + (pulse ? "pulse-once" : "")}>
+      <span className="text-orange-500"><Icon.Flame size={14}/></span>
+      <span className="text-xs font-medium tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function TopicChip({ active, children, onClick, tone }){
+  const activeCls = tone === "rose"
+    ? "bg-rose-600 text-white border-rose-600 shadow-soft"
+    : "bg-slate-900 text-white border-slate-900 shadow-soft";
+  return (
+    <button onClick={onClick}
+      className={classNames(
+        "tap btn whitespace-nowrap text-[12px] px-3 py-1.5 rounded-full border font-medium",
+        active ? activeCls
+               : "bg-white text-slate-600 border-[rgba(15,23,42,0.06)] hover:border-[rgba(15,23,42,0.16)]"
+      )}>
+      {children}
+    </button>
+  );
+}
+
+function Badge({ state }){
+  const map = {
+    neu:    { l:"New",      cls:"bg-slate-100 text-slate-600 border-slate-200" },
+    lernen: { l:"Learning", cls:"bg-amber-50 text-amber-700 border-amber-200" },
+    sitzt:  { l:"Got it",   cls:"bg-emerald-50 text-emerald-700 border-emerald-200" },
+  };
+  const x = map[state] || map.neu;
+  return <span className={"text-[11px] px-2 py-0.5 rounded-full border " + x.cls}>{x.l}</span>;
+}
+
+function MiniStat({ tone="indigo", value, label }){
+  const map = {
+    slate:"bg-slate-50 text-slate-700",
+    amber:"bg-amber-50 text-amber-700",
+    emerald:"bg-emerald-50 text-emerald-700",
+    indigo:"bg-indigo-50 text-indigo-700",
+  };
+  return (
+    <div className={"rounded-xl p-2.5 " + (map[tone]||map.indigo)}>
+      <div className="font-display text-xl font-semibold leading-tight tabular-nums">{value}</div>
+      <div className="text-[11px] opacity-80">{label}</div>
+    </div>
+  );
+}
+
+function RatingBtn({ tone="slate", onClick, children, shortcut }){
+  const map = {
+    slate:   "bg-white text-slate-700 border-[rgba(15,23,42,0.08)] hover:border-slate-300",
+    amber:   "bg-amber-50/70 text-amber-800 border-amber-200/80 hover:bg-amber-100",
+    emerald: "bg-emerald-50/70 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100",
+    rose:    "bg-rose-50/70 text-rose-800 border-rose-200/80 hover:bg-rose-100",
+  };
+  return (
+    <button onClick={onClick} className={"tap btn rounded-xl border py-3 text-sm font-medium relative shadow-soft hover:shadow-lift " + (map[tone]||map.slate)}>
+      <span>{children}</span>
+      {shortcut && <span className="absolute right-2 top-2 kbd">{shortcut}</span>}
+    </button>
+  );
+}
+
+/* ======================== LOGIN ======================== */
+function LoginScreen({ onLogin }){
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  const submit = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) { setError("Please enter your name."); return; }
+    if (trimmed.length < 2) { setError("Name too short."); return; }
+    if (trimmed.length > 32) { setError("Name too long (max 32)."); return; }
+    setBusy(true); setError(null);
+    try {
+      await onLogin(trimmed);
+    } catch (err) {
+      setError(err.message || "Login failed.");
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm fade-in">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white shadow-soft mb-3">
+            <span className="text-2xl">🌱</span>
+          </div>
+          <h1 className="font-display text-2xl font-semibold text-slate-900">SF Study</h1>
+          <p className="text-[13px] text-slate-500 mt-1">HSLU MSc · Sustainable Financing · Multiplayer Edition</p>
+        </div>
+
+        <form onSubmit={submit} className="surface-card shadow-soft p-5 space-y-3">
+          <label className="block">
+            <span className="text-[12px] text-slate-500 font-medium">Your name</span>
+            <input
+              type="text"
+              value={name}
+              onChange={e=>setName(e.target.value)}
+              placeholder="e.g. Pascal"
+              maxLength={32}
+              autoFocus
+              className="mt-1 w-full rounded-xl border border-[rgba(15,23,42,0.08)] bg-white px-3.5 py-2.5 text-[15px] focus:border-indigo-500"
+            />
+          </label>
+
+          {error && (
+            <div className="text-[12px] text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5">{error}</div>
+          )}
+
+          <button
+            type="submit"
+            disabled={busy}
+            className="tap btn w-full rounded-xl bg-[#059669] text-white font-semibold py-3 shadow-accent hover:bg-[#047857] disabled:opacity-60">
+            {busy ? "Logging in…" : "Start studying"}
+          </button>
+
+          <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+            Your name is public on the leaderboard. Your progress is saved across all your devices.
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ======================== FIREBASE SETUP SCREEN ======================== */
+function SetupScreen(){
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-lg fade-in">
+        <div className="surface-card shadow-soft p-6 space-y-3">
+          <h1 className="font-display text-xl font-semibold text-slate-900">⚙️ Firebase setup required</h1>
+          <p className="text-[14px] text-slate-600 leading-relaxed">
+            The multiplayer login & leaderboard need your OWN Firebase backend. Paste your <span className="font-mono text-[13px]">firebaseConfig</span> into the HTML file (the <span className="font-mono text-[13px]">window.FIREBASE_CONFIG</span> block), then re-upload to GitHub. Do not reuse anyone else's config.
+          </p>
+          <ol className="text-[13px] text-slate-700 list-decimal pl-5 space-y-1.5">
+            <li>Open <span className="font-mono text-[12px]">console.firebase.google.com</span></li>
+            <li>Create a project → register a web app → copy the config</li>
+            <li>Enable Firestore Database (production mode) and paste the security rules from the setup guide</li>
+            <li>Paste the 6 config lines into <span className="font-mono text-[12px]">sf-lernapp.html</span></li>
+            <li>Re-upload to GitHub → live in ~1 min</li>
+          </ol>
+          <p className="text-[11px] text-slate-400">Until config is pasted, this app cannot save progress or show leaderboards.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ======================== TAB BAR ======================== */
+function TabBar({ active, onChange, streak, displayName, onLogout }){
+  const tabs = [
+    {id:"dash",    label:"Overview"},
+    {id:"cards",   label:"Flashcards"},
+    {id:"quiz",    label:"Quiz"},
+    {id:"formel",  label:"Formulas"},
+    {id:"gloss",   label:"Frameworks"},
+    {id:"board",   label:"Leaderboard"},
+    {id:"search",  label:"Search"},
+  ];
+  return (
+    <nav className="sticky top-0 z-30 backdrop-blur-md bg-[rgba(250,250,247,0.78)] border-b border-[rgba(15,23,42,0.04)]">
+      <div className="max-w-3xl mx-auto px-4 pt-3 pb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="inline-block w-2 h-2 rounded-full bg-[#059669] live-dot shrink-0"></span>
+          <div className="font-display text-[15px] font-semibold tracking-tight text-slate-900 truncate">SF · Study</div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <StreakChip value={streak} />
+          {displayName && (
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-[rgba(15,23,42,0.06)] text-slate-700">
+              <span className="text-slate-400"><Icon.User size={12}/></span>
+              <span className="text-[12px] font-medium max-w-[120px] truncate">{displayName}</span>
+            </div>
+          )}
+          {onLogout && (
+            <button onClick={onLogout} title="Log out"
+              className="tap btn p-1.5 rounded-full bg-white border border-[rgba(15,23,42,0.06)] text-slate-500 hover:text-slate-700">
+              <Icon.LogOut size={14}/>
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="max-w-3xl mx-auto px-2 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-1.5 pb-2">
+          {tabs.map(t=>(
+            <button key={t.id}
+              onClick={()=>onChange(t.id)}
+              className={classNames(
+                "tap btn px-3.5 py-1.5 rounded-full text-[13px] whitespace-nowrap font-medium",
+                active===t.id
+                  ? "bg-slate-900 text-white shadow-soft"
+                  : "bg-white text-slate-600 border border-[rgba(15,23,42,0.06)] hover:border-[rgba(15,23,42,0.14)]"
+              )}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ======================== DASHBOARD ======================== */
+function Dashboard({ onPickTopic, onWeakSpots, leitner, totalCards, totalQuiz, streak, displayName }){
+  const ranked = [...TOPICS].sort((a,b)=> b.weight - a.weight);
+  const countByTopic = useMemo(()=>{
+    const m = {};
+    CARDS.forEach(c=>{ m[c.topic] = (m[c.topic]||0) + 1; });
+    return m;
+  }, []);
+  const counts = useMemo(()=>{
+    const c = { neu:0, lernen:0, sitzt:0 };
+    Object.values(leitner).forEach(v=>{
+      if (v==="sitzt") c.sitzt++;
+      else if (v==="lernen") c.lernen++;
+      else c.neu++;
+    });
+    const open = totalCards - (c.lernen + c.sitzt + c.neu);
+    if (open > 0) c.neu += open;
+    return c;
+  }, [leitner, totalCards]);
+  const percent = totalCards === 0 ? 0 : (counts.sitzt / totalCards) * 100;
+  const weakCount = useMemo(()=> CARDS.filter(c => leitner[c.id]==="neu" || leitner[c.id]==="lernen").length, [leitner]);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 fade-in">
+      <header className="space-y-1">
+        <h1 className="font-display text-3xl font-semibold text-slate-900 leading-tight">
+          Welcome back{displayName ? `, ${displayName}` : ""}
+        </h1>
+        <p className="text-[14px] text-slate-500">Content sourced exclusively from your HSLU materials. Topics sorted by exam frequency.</p>
+      </header>
+
+      <section className="surface-card shadow-soft p-5">
+        <div className="flex flex-col sm:flex-row items-center gap-5">
+          <ProgressRing percent={percent} color="#059669" label="Mastered" sub={`${counts.sitzt} / ${totalCards} cards`} />
+          <div className="flex-1 w-full grid grid-cols-3 gap-2.5">
+            <MiniStat tone="slate"   value={counts.neu}    label="New" />
+            <MiniStat tone="amber"   value={counts.lernen} label="Learning" />
+            <MiniStat tone="emerald" value={counts.sitzt}  label="Got it" />
+            <MiniStat tone="indigo"  value={totalCards}    label="Flashcards" />
+            <MiniStat tone="indigo"  value={totalQuiz}     label="Quiz items" />
+            <MiniStat tone="indigo"  value={GLOSSARY.length} label="Glossary" />
+          </div>
+        </div>
+        <button onClick={onWeakSpots}
+          className="tap btn mt-4 w-full rounded-xl border border-rose-200 bg-rose-50/60 text-rose-800 py-2.5 text-[13px] font-medium hover:bg-rose-100 flex items-center justify-center gap-2">
+          <Icon.Alert size={15}/>
+          Review weak spots {weakCount > 0 ? `(${weakCount})` : "— none yet"}
+        </button>
+      </section>
+
+      <section className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="font-display text-sm font-semibold text-slate-700">Topics by exam frequency</h2>
+          <span className="text-[11px] text-slate-400">Tap to study</span>
+        </div>
+        <ul className="space-y-2">
+          {ranked.map((t,i)=> {
+            const prio = priorityForWeight(t.weight);
+            const sty = priorityStyles[prio.tone];
+            return (
+              <li key={t.id}>
+                <button onClick={()=>onPickTopic(t.id)}
+                  className="tap btn lift-hover w-full text-left surface-card shadow-soft p-4 flex items-center gap-3 hover:shadow-lift">
+                  <span className={"inline-flex items-center justify-center w-7 h-7 rounded-full font-mono text-[11px] " + sty.chip}>{i+1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-medium text-slate-900 truncate leading-tight">{t.name}</div>
+                    <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
+                      <span className={"inline-block w-1.5 h-1.5 rounded-full " + sty.dot}></span>
+                      <span>{prio.label} priority</span>
+                      <span className="text-slate-300">·</span>
+                      <span>{countByTopic[t.id] || 0} cards</span>
+                    </div>
+                  </div>
+                  <div className="shrink-0"><Sparkline weight={t.weight} tone={prio.tone}/></div>
+                  <span className="text-slate-400"><Icon.ChevronRight size={14}/></span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+/* ======================== FLASHCARDS (with weak-spots) ======================== */
+function FlashcardMode({ leitner, setLeitner, topicFilter, setTopicFilter, onMark }){
+  const filteredCards = useMemo(()=>{
+    if (topicFilter === "weak") return CARDS.filter(c => leitner[c.id]==="neu" || leitner[c.id]==="lernen");
+    if (!topicFilter || topicFilter==="all") return CARDS;
+    return CARDS.filter(c=>c.topic===topicFilter);
+  }, [topicFilter, leitner]);
+
+  const queue = useMemo(()=>{
+    const tier = (id) => {
+      const s = leitner[id];
+      if (s==="sitzt") return 2;
+      if (s==="lernen") return 1;
+      return 0;
+    };
+    if (topicFilter === "weak") return filteredCards;
+    return [...filteredCards].sort((a,b)=> tier(a.id) - tier(b.id));
+  }, [filteredCards, leitner, topicFilter]);
+
+  const [idx, setIdx] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [showSrc, setShowSrc] = useState(false);
+
+  useEffect(()=>{ setIdx(0); setFlipped(false); setShowSrc(false); }, [topicFilter]);
+
+  function markCurrent(status){
+    const card = queue[idx % queue.length];
+    if (!card) return;
+    setLeitner(prev => ({ ...prev, [card.id]: status }));
+    onMark && onMark(status, card.id, queue);
+    setFlipped(false);
+    setShowSrc(false);
+    setIdx(i => i + 1);
+  }
+
+  useEffect(()=>{
+    const handler = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (queue.length === 0) return;
+      if (e.code === "Space") { e.preventDefault(); setFlipped(f=>!f); }
+      else if (e.code === "ArrowRight" || e.code === "ArrowDown") { e.preventDefault(); setIdx(i=>i+1); setFlipped(false); setShowSrc(false); }
+      else if (e.code === "ArrowLeft"  || e.code === "ArrowUp")   { e.preventDefault(); setIdx(i=>Math.max(0, i-1)); setFlipped(false); setShowSrc(false); }
+      else if (e.key === "1") { e.preventDefault(); markCurrent("neu"); }
+      else if (e.key === "2") { e.preventDefault(); markCurrent("lernen"); }
+      else if (e.key === "3") { e.preventDefault(); markCurrent("sitzt"); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line
+  }, [queue, idx, leitner]);
+
+  const isWeak = topicFilter === "weak";
+
+  const ChipRow = () => (
+    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+      <TopicChip active={isWeak} tone="rose" onClick={()=>setTopicFilter("weak")}>⚠ Weak spots</TopicChip>
+      <TopicChip active={topicFilter==="all" || !topicFilter} onClick={()=>setTopicFilter("all")}>All</TopicChip>
+      {TOPICS.map(t=>(<TopicChip key={t.id} active={topicFilter===t.id} onClick={()=>setTopicFilter(t.id)}>{t.name}</TopicChip>))}
+    </div>
+  );
+
+  if (queue.length === 0) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-5 space-y-4 fade-in">
+        <ChipRow/>
+        <div className="surface-card shadow-soft p-8 text-center text-slate-500">
+          {isWeak
+            ? "No weak spots right now — nothing marked «Again» or «Learning». Study some cards and the ones you struggle with will collect here. 🌱"
+            : "No cards for this topic."}
+        </div>
+      </div>
+    );
+  }
+
+  const card = queue[idx % queue.length];
+  const state = leitner[card.id] || "neu";
+
+  const filteredProgressPct = queue.length === 0 ? 0 :
+    (queue.filter(c => leitner[c.id] === "sitzt").length / queue.length) * 100;
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-5 space-y-4 fade-in safe-bottom">
+      <ChipRow/>
+      <div className="flex items-center justify-between">
+        <div className="text-[12px] text-slate-500 font-mono tabular-nums">{(idx % queue.length) + 1} / {queue.length}{isWeak ? " · weak spots" : ""}</div>
+        <Badge state={state} />
+      </div>
+
+      <div className="perspective-card">
+        <div className={classNames("card-flip relative w-full min-h-[320px]", flipped && "is-flipped")} onClick={()=>setFlipped(f=>!f)}>
+          <div className="card-face absolute inset-0">
+            <div className="surface-card shadow-soft p-6 min-h-[320px] flex flex-col">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-slate-400 font-mono">{tagForTopic(card.topic)}</div>
+                <div className="text-slate-300"><Icon.BookOpen size={14}/></div>
+              </div>
+              <div className="mt-4 text-[17px] sm:text-[19px] font-display font-medium text-slate-900 leading-snug whitespace-pre-wrap">{card.q}</div>
+              <div className="mt-auto pt-4 text-[12px] text-slate-400 flex items-center gap-2"><span className="kbd">space</span><span>to reveal</span></div>
+            </div>
+          </div>
+          <div className="card-face card-back absolute inset-0">
+            <div className="surface-card shadow-soft p-6 min-h-[320px] flex flex-col bg-gradient-to-b from-white to-[#F0FBF5]">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] uppercase tracking-[0.08em] text-emerald-600 font-mono">Answer</div>
+                <span className="text-emerald-400"><Icon.Leaf size={14}/></span>
+              </div>
+              <div className="mt-3 text-[15px] text-slate-800 leading-[1.65] whitespace-pre-wrap">{card.a}</div>
+              <div className="mt-4">
+                <button onClick={(e)=>{ e.stopPropagation(); setShowSrc(s=>!s); }} className="text-[12px] text-emerald-700 hover:text-emerald-800 underline underline-offset-4">{showSrc ? "Hide source" : "Show source"}</button>
+                {showSrc && (<div className="mt-2 text-[12px] text-slate-600 bg-white rounded-lg border border-[rgba(15,23,42,0.06)] p-2.5">{card.src}</div>)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <RatingBtn onClick={()=>markCurrent("neu")} tone="rose" shortcut="1">Again</RatingBtn>
+        <RatingBtn onClick={()=>markCurrent("lernen")} tone="amber" shortcut="2">Learning</RatingBtn>
+        <RatingBtn onClick={()=>markCurrent("sitzt")} tone="emerald" shortcut="3">Got it</RatingBtn>
+      </div>
+
+      <div className="surface-card shadow-soft p-3">
+        <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5">
+          <span>{isWeak ? "Weak-spots progress" : "Topic progress"}</span>
+          <span className="font-mono tabular-nums">{Math.round(filteredProgressPct)}%</span>
+        </div>
+        <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-full bg-[#059669] ring-bar" style={{ width: `${filteredProgressPct}%` }}/>
+        </div>
+      </div>
+
+      <div className="hidden sm:flex items-center justify-center gap-3 text-[11px] text-slate-400">
+        <span className="flex items-center gap-1"><span className="kbd">space</span> flip</span>
+        <span className="flex items-center gap-1"><span className="kbd">←</span><span className="kbd">→</span> nav</span>
+        <span className="flex items-center gap-1"><span className="kbd">1</span><span className="kbd">2</span><span className="kbd">3</span> rate</span>
+      </div>
+    </div>
+  );
+}
+
+/* ======================== QUIZ (with open-question self-grading) ======================== */
+function QuizMode(){
+  const [idx, setIdx] = useState(0);
+  const [picked, setPicked] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const [graded, setGraded] = useState(false);
+  const [showSrc, setShowSrc] = useState(false);
+  const [score, setScore] = useState({ c:0, total:0 });
+  const [topicFilter, setTopicFilter] = useState("all");
+  const [examOnly, setExamOnly] = useState(false);
+
+  const items = useMemo(()=>{
+    let q = QUIZ;
+    if (examOnly) q = q.filter(x => x.id.startsWith("e"));
+    if (topicFilter !== "all") q = q.filter(x => x.topic === topicFilter);
+    return q;
+  }, [topicFilter, examOnly]);
+
+  useEffect(()=>{ setIdx(0); setPicked(null); setRevealed(false); setGraded(false); setShowSrc(false); }, [topicFilter, examOnly]);
+
+  if (items.length === 0) { return <div className="max-w-3xl mx-auto px-4 py-10 text-center text-slate-500">No quiz items match the current filter.</div>; }
+  const q = items[idx % items.length];
+
+  const submit = ()=>{
+    if (revealed) return;
+    setRevealed(true);
+    if (q.type === "open") return; // scored via self-grade buttons
+    setScore(s=>{
+      let isCorrect = false;
+      if (q.type === "mcq") isCorrect = picked === q.correct;
+      else if (q.type === "mcq-multi") {
+        const a = Array.isArray(picked) ? [...picked].sort() : [];
+        const b = [...q.correct].sort();
+        isCorrect = a.length === b.length && a.every((v,i)=>v===b[i]);
+      }
+      return { c: s.c + (isCorrect?1:0), total: s.total + 1 };
+    });
+  };
+  const selfGrade = (val)=>{
+    if (graded) return;
+    setGraded(true);
+    setScore(s=>({ c: s.c + val, total: s.total + 1 }));
+  };
+  const next = ()=>{ setIdx(i=>i+1); setPicked(null); setRevealed(false); setGraded(false); setShowSrc(false); };
+  const pct = score.total === 0 ? 0 : Math.round(100 * score.c / score.total);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-5 space-y-4 fade-in safe-bottom">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+        <TopicChip active={!examOnly} onClick={()=>setExamOnly(false)}>All items</TopicChip>
+        <TopicChip active={examOnly} onClick={()=>setExamOnly(true)}>Past-exam only</TopicChip>
+      </div>
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+        <TopicChip active={topicFilter==="all"} onClick={()=>setTopicFilter("all")}>All topics</TopicChip>
+        {TOPICS.filter(t=>QUIZ.some(qq=>qq.topic===t.id)).map(t=>(<TopicChip key={t.id} active={topicFilter===t.id} onClick={()=>setTopicFilter(t.id)}>{t.name}</TopicChip>))}
+      </div>
+
+      <div className="surface-card shadow-soft p-3 flex items-center justify-between">
+        <div className="text-[12px] text-slate-500"><span className="font-mono tabular-nums">{(idx % items.length)+1}</span><span className="text-slate-400"> / </span><span className="font-mono tabular-nums">{items.length}</span></div>
+        <div className="flex items-center gap-2">
+          <div className="text-[12px] text-slate-500">Score</div>
+          <div className="font-mono tabular-nums text-[13px] text-slate-900">{score.c} / {score.total}</div>
+          <div className="w-16 h-1.5 rounded-full bg-slate-100 overflow-hidden"><div className="h-full bg-emerald-500 ring-bar" style={{ width: `${pct}%` }}/></div>
+        </div>
+      </div>
+
+      <div className="surface-card shadow-soft p-5 sm:p-6 space-y-3.5">
+        <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          <span className="font-mono uppercase tracking-[0.08em] text-slate-400">{tagForTopic(q.topic)}</span>
+          {q.type==="open" && <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">Open</span>}
+          {q.type==="mcq-multi" && <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">Multi-select</span>}
+          {q.id.startsWith("e") && <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">From past exam</span>}
+        </div>
+        <div className="font-display text-[16px] sm:text-[17px] font-medium text-slate-900 leading-snug whitespace-pre-wrap">{q.q}</div>
+
+        {q.type === "mcq" && (<div className="space-y-2">{q.options.map((o,i)=>{
+          const isPicked = picked===i;
+          const isCorrect = revealed && q.correct===i;
+          const isWrong   = revealed && isPicked && q.correct!==i;
+          return (<button key={i} disabled={revealed} onClick={()=>setPicked(i)}
+            className={classNames("tap btn w-full text-left rounded-xl border p-3 text-[14px] transition",
+              isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-800" :
+              isWrong   ? "border-rose-300 bg-rose-50 text-rose-800" :
+              isPicked  ? "border-indigo-400 bg-indigo-50 text-indigo-900 shadow-accent" :
+                          "border-[rgba(15,23,42,0.06)] bg-white hover:border-[rgba(15,23,42,0.18)]")}>
+            <span className="font-mono font-medium mr-2 text-[12px] inline-flex items-center justify-center w-5 h-5 rounded-md bg-white/70 border border-[rgba(15,23,42,0.06)]">{String.fromCharCode(65+i)}</span>{o}
+          </button>);
+        })}</div>)}
+
+        {q.type === "mcq-multi" && (<div className="space-y-2">{q.options.map((o,i)=>{
+          const arr = Array.isArray(picked) ? picked : [];
+          const isPicked = arr.includes(i);
+          const isCorrect = revealed && q.correct.includes(i);
+          const isWrong   = revealed && isPicked && !q.correct.includes(i);
+          return (<button key={i} disabled={revealed}
+            onClick={()=>{ if (revealed) return; setPicked(prev=>{ const arr2 = Array.isArray(prev) ? [...prev] : []; const at = arr2.indexOf(i); if (at>=0) arr2.splice(at,1); else arr2.push(i); return arr2; }); }}
+            className={classNames("tap btn w-full text-left rounded-xl border p-3 text-[14px] transition",
+              isCorrect ? "border-emerald-300 bg-emerald-50 text-emerald-800" :
+              isWrong   ? "border-rose-300 bg-rose-50 text-rose-800" :
+              isPicked  ? "border-indigo-400 bg-indigo-50 text-indigo-900 shadow-accent" :
+                          "border-[rgba(15,23,42,0.06)] bg-white hover:border-[rgba(15,23,42,0.18)]")}>
+            <span className="font-mono font-medium mr-2 text-[12px] inline-flex items-center justify-center w-5 h-5 rounded-md bg-white/70 border border-[rgba(15,23,42,0.06)]">{String.fromCharCode(65+i)}</span>{o}
+          </button>);
+        })}</div>)}
+
+        {q.type === "open" && (<div className="text-[12px] text-slate-500">Open question (from past exam). Think/write your answer, reveal the model answer, then grade yourself.</div>)}
+
+        {!revealed && (<button onClick={submit} className="tap btn w-full rounded-xl bg-[#4F46E5] text-white text-[14px] py-3 font-semibold shadow-accent hover:bg-[#4338CA]">{q.type==="open" ? "Show model answer" : "Check answer"}</button>)}
+
+        {revealed && (<div className="space-y-2.5 pt-1">
+          {q.type !== "open" && q.explain && (<div className="text-[14px] text-slate-700 leading-relaxed"><span className="font-semibold">Explanation: </span>{q.explain}</div>)}
+          {q.type === "open" && (<div className="rounded-xl border border-[rgba(15,23,42,0.06)] bg-[#F8F9FB] p-3.5 text-[14px] text-slate-800 whitespace-pre-wrap leading-[1.65]">{q.sample}</div>)}
+
+          {q.type === "open" && !graded && (
+            <div className="space-y-1.5">
+              <div className="text-[12px] text-slate-500">How did you do?</div>
+              <div className="grid grid-cols-3 gap-2">
+                <RatingBtn onClick={()=>selfGrade(0)}   tone="rose">Missed</RatingBtn>
+                <RatingBtn onClick={()=>selfGrade(0.5)} tone="amber">Partial</RatingBtn>
+                <RatingBtn onClick={()=>selfGrade(1)}   tone="emerald">Got it</RatingBtn>
+              </div>
+            </div>
+          )}
+          {q.type === "open" && graded && (<div className="text-[13px] text-emerald-700">Recorded — added to your score.</div>)}
+
+          <button onClick={()=>setShowSrc(s=>!s)} className="text-[12px] text-indigo-700 hover:text-indigo-800 underline underline-offset-4">{showSrc ? "Hide source" : "Show source"}</button>
+          {showSrc && (<div className="text-[12px] text-slate-600 bg-white rounded-lg border border-[rgba(15,23,42,0.06)] p-2.5">{q.src}</div>)}
+
+          {(q.type !== "open" || graded) && (
+            <button onClick={next} className="tap btn w-full rounded-xl border border-[rgba(15,23,42,0.06)] bg-white text-slate-800 text-[14px] py-2.5 mt-1 font-medium hover:border-[rgba(15,23,42,0.16)]">Next question →</button>
+          )}
+        </div>)}
+      </div>
+    </div>
+  );
+}
+
+/* ======================== FORMULA SHEET ======================== */
+function FormulaSheet(){
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-5 space-y-3 fade-in safe-bottom">
+      <header className="space-y-1 px-1">
+        <h1 className="font-display text-3xl font-semibold text-slate-900">Formula cheat sheet</h1>
+        <p className="text-[14px] text-slate-500">Sustainable finance is framework-heavy — only the few quantitative bits from your slides are here.</p>
+      </header>
+      <ul className="space-y-2.5">
+        {FORMULAE.map(f=>(
+          <li key={f.id} className="surface-card shadow-soft p-5 lift-hover hover:shadow-lift">
+            <div className="text-[11px] uppercase tracking-[0.08em] text-slate-400 font-mono">{f.title}</div>
+            <div className="mt-2 font-mono text-[14px] sm:text-[15px] text-slate-900 whitespace-pre-wrap leading-relaxed">{f.formula}</div>
+            {f.note && <div className="mt-2 text-[14px] text-slate-600 whitespace-pre-wrap leading-[1.65]">{f.note}</div>}
+            <div className="mt-2 text-[11px] text-slate-400">{f.src}</div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ======================== FRAMEWORKS / GLOSSARY ======================== */
+function GlossarySheet(){
+  const [q, setQ] = useState("");
+  const norm = (s)=> (s||"").toLowerCase();
+  const term = norm(q.trim());
+  const cats = useMemo(()=>{
+    const order = [];
+    const map = {};
+    GLOSSARY.forEach(g=>{
+      if (term && !(norm(g.term).includes(term) || norm(g.def).includes(term) || norm(g.cat).includes(term))) return;
+      if (!map[g.cat]) { map[g.cat] = []; order.push(g.cat); }
+      map[g.cat].push(g);
+    });
+    return order.map(c => ({ cat:c, items: map[c] }));
+  }, [term]);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-5 space-y-4 fade-in safe-bottom">
+      <header className="space-y-1 px-1">
+        <h1 className="font-display text-3xl font-semibold text-slate-900">Frameworks & glossary</h1>
+        <p className="text-[14px] text-slate-500">The acronym-heavy reference: principles, regulation, instruments, ratings & real-estate standards.</p>
+      </header>
+      <div className="relative">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"><Icon.Search size={16}/></span>
+        <input type="search" value={q} onChange={e=>setQ(e.target.value)}
+          placeholder="GBP, SLBP, EU Taxonomy, Scope 3, GRESB, greenium…"
+          className="w-full rounded-2xl border border-[rgba(15,23,42,0.06)] bg-white pl-10 pr-4 py-3 text-[15px] shadow-soft"/>
+      </div>
+
+      {cats.length === 0 && (<div className="text-center py-10 text-slate-500">No entries match «{q}».</div>)}
+
+      {cats.map(group=>(
+        <section key={group.cat} className="space-y-2">
+          <h2 className="font-display text-sm font-semibold text-slate-700 px-1 pt-1">{group.cat}</h2>
+          <ul className="space-y-2">
+            {group.items.map(g=>(
+              <li key={g.id} className="surface-card shadow-soft p-4 lift-hover hover:shadow-lift">
+                <div className="flex items-start gap-2">
+                  <span className="text-emerald-500 mt-0.5 shrink-0"><Icon.Leaf size={14}/></span>
+                  <div className="min-w-0">
+                    <div className="font-display font-semibold text-slate-900 text-[14px]">{g.term}</div>
+                    <div className="mt-1 text-[14px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{g.def}</div>
+                    <div className="mt-2 text-[11px] text-slate-400">{g.src}</div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/* ======================== LEADERBOARD ======================== */
+function Leaderboard({ currentName }){
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(()=>{
+    if (!db) return;
+    setLoading(true);
+    const unsub = db.collection("users")
+      .orderBy("totalGotIt", "desc")
+      .limit(100)
+      .onSnapshot(
+        (snap) => {
+          const arr = [];
+          snap.forEach(doc => arr.push({ id: doc.id, ...doc.data() }));
+          setUsers(arr);
+          setLoading(false);
+          setError(null);
+        },
+        (err) => { setError(err.message); setLoading(false); }
+      );
+    return () => unsub();
+  }, []);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-5 space-y-4 fade-in safe-bottom">
+      <header className="space-y-1 px-1">
+        <h1 className="font-display text-3xl font-semibold text-slate-900 flex items-center gap-2">
+          <span className="text-amber-500"><Icon.Trophy size={26}/></span>
+          Leaderboard
+        </h1>
+        <p className="text-[14px] text-slate-500">Everyone who's studying. Updates live as people mark cards.</p>
+      </header>
+
+      {loading && (<div className="text-center py-10 text-slate-500">Loading…</div>)}
+      {error && (<div className="text-[13px] text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">Could not load leaderboard: {error}</div>)}
+
+      {!loading && users.length === 0 && (
+        <div className="text-center py-10 text-slate-500">No users yet. You're the first!</div>
+      )}
+
+      <ul className="space-y-2">
+        {users.map((u, i) => {
+          const isMe = u.displayName === currentName;
+          const masteryPct = u.totalGotIt && CARDS.length ? Math.round(100 * u.totalGotIt / CARDS.length) : 0;
+          const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : null;
+          return (
+            <li key={u.id} className={"surface-card shadow-soft p-3.5 flex items-center gap-3 " + (isMe ? "ring-2 ring-emerald-300" : "")}>
+              <div className="shrink-0 w-9 h-9 inline-flex items-center justify-center rounded-full bg-slate-50 font-mono text-[13px] text-slate-700">
+                {medal || `#${i+1}`}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="font-display font-semibold text-slate-900 truncate text-[14px]">
+                    {u.displayName || u.id}
+                  </div>
+                  {isMe && <span className="text-[10px] uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">You</span>}
+                </div>
+                <div className="flex items-center gap-2.5 mt-1 text-[11px] text-slate-500">
+                  <span className="flex items-center gap-1 text-orange-600">
+                    <Icon.Flame size={11}/>
+                    <span className="font-mono tabular-nums">{u.streak || 0}</span>
+                  </span>
+                  <span className="text-slate-300">·</span>
+                  <span>best <span className="font-mono tabular-nums">{u.bestStreak || 0}</span></span>
+                  <span className="text-slate-300">·</span>
+                  <span className="hidden sm:inline">{timeAgo(u.lastActive)}</span>
+                </div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="font-display text-[18px] font-semibold text-slate-900 tabular-nums leading-none">{u.totalGotIt || 0}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">mastered · {masteryPct}%</div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p className="text-[11px] text-slate-400 text-center px-2 leading-relaxed">
+        Sorted by mastered cards (descending). Streak = consecutive «Got it» in a row.
+      </p>
+    </div>
+  );
+}
+
+/* ======================== SEARCH ======================== */
+function SearchMode(){
+  const [q, setQ] = useState("");
+  const norm = (s)=> (s||"").toLowerCase();
+  const term = norm(q.trim());
+  const results = useMemo(()=>{
+    if (!term) return { cards:[], quiz:[], formulae:[], glossary:[] };
+    const cards = CARDS.filter(c=> norm(c.q).includes(term) || norm(c.a).includes(term) || norm(tagForTopic(c.topic)).includes(term));
+    const quiz = QUIZ.filter(c=> norm(c.q).includes(term) || norm(c.explain).includes(term) || norm(c.sample).includes(term));
+    const formulae = FORMULAE.filter(f=> norm(f.title).includes(term) || norm(f.formula).includes(term) || norm(f.note).includes(term));
+    const glossary = GLOSSARY.filter(g=> norm(g.term).includes(term) || norm(g.def).includes(term));
+    return { cards, quiz, formulae, glossary };
+  }, [term]);
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-5 space-y-4 fade-in safe-bottom">
+      <header className="space-y-1 px-1">
+        <h1 className="font-display text-3xl font-semibold text-slate-900">Search</h1>
+        <p className="text-[14px] text-slate-500">Full-text across cards, quiz items, formulas and the glossary.</p>
+      </header>
+      <div className="relative">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"><Icon.Search size={16}/></span>
+        <input type="search" value={q} onChange={e=>setQ(e.target.value)}
+          placeholder="greenium, double materiality, SLB, transition, Scope 3…"
+          className="w-full rounded-2xl border border-[rgba(15,23,42,0.06)] bg-white pl-10 pr-4 py-3.5 text-[15px] shadow-soft"/>
+      </div>
+      {term && (<div className="text-[12px] text-slate-500 px-1 font-mono tabular-nums">{results.cards.length} cards · {results.quiz.length} quiz · {results.formulae.length} formulas · {results.glossary.length} glossary</div>)}
+
+      <div className="space-y-3">
+        {results.cards.map(c=>(
+          <div key={c.id} className="surface-card shadow-soft p-4">
+            <div className="text-[11px] uppercase tracking-[0.08em] text-slate-400 font-mono">{tagForTopic(c.topic)} · Card</div>
+            <div className="mt-2 font-display font-medium text-slate-900 whitespace-pre-wrap">{c.q}</div>
+            <div className="mt-1 text-[14px] text-slate-700 whitespace-pre-wrap leading-[1.65]">{c.a}</div>
+            <div className="mt-2 text-[11px] text-slate-400">{c.src}</div>
+          </div>
+        ))}
+        {results.quiz.map(c=>(
+          <div key={c.id} className="surface-card shadow-soft p-4">
+            <div className="text-[11px] uppercase tracking-[0.08em] text-slate-400 font-mono">{tagForTopic(c.topic)} · Quiz</div>
+            <div className="mt-2 font-display font-medium text-slate-900 whitespace-pre-wrap">{c.q}</div>
+            {c.explain && <div className="mt-1 text-[14px] text-slate-700 whitespace-pre-wrap leading-[1.65]">{c.explain}</div>}
+            {c.sample && <div className="mt-1 text-[14px] text-slate-700 whitespace-pre-wrap leading-[1.65]">{c.sample}</div>}
+            <div className="mt-2 text-[11px] text-slate-400">{c.src}</div>
+          </div>
+        ))}
+        {results.glossary.map(g=>(
+          <div key={g.id} className="surface-card shadow-soft p-4">
+            <div className="text-[11px] uppercase tracking-[0.08em] text-slate-400 font-mono">{g.cat} · Glossary</div>
+            <div className="mt-2 font-display font-medium text-slate-900">{g.term}</div>
+            <div className="mt-1 text-[14px] text-slate-700 leading-[1.65]">{g.def}</div>
+            <div className="mt-2 text-[11px] text-slate-400">{g.src}</div>
+          </div>
+        ))}
+        {results.formulae.map(f=>(
+          <div key={f.id} className="surface-card shadow-soft p-4">
+            <div className="text-[11px] uppercase tracking-[0.08em] text-slate-400 font-mono">Formula</div>
+            <div className="mt-2 font-display font-medium text-slate-900">{f.title}</div>
+            <div className="mt-1 font-mono text-[14px] text-slate-800">{f.formula}</div>
+            {f.note && <div className="mt-1 text-[14px] text-slate-700 leading-[1.65]">{f.note}</div>}
+            <div className="mt-2 text-[11px] text-slate-400">{f.src}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================== APP ROOT ======================== */
+function App(){
+  if (!FIREBASE_READY) return <SetupScreen/>;
+  if (firebaseError) return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="surface-card shadow-soft p-6 max-w-md fade-in">
+        <h1 className="font-display text-lg font-semibold text-rose-700">Firebase init error</h1>
+        <p className="text-[14px] text-slate-700 mt-1">{firebaseError}</p>
+        <p className="text-[12px] text-slate-500 mt-2">Check that <span className="font-mono">FIREBASE_CONFIG</span> at the top of the HTML file is filled in correctly.</p>
+      </div>
+    </div>
+  );
+
+  const [displayName, setDisplayName] = useState(() => {
+    try { return localStorage.getItem(SESSION_KEY) || null; } catch (e) { return null; }
+  });
+
+  const [tab, setTab] = useState("dash");
+  const [leitner, setLeitner] = useState({});
+  const [topicFilter, setTopicFilter] = useState("all");
+  const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [streakPulse, setStreakPulse] = useState(false);
+  const [confettiFiredFor, setConfettiFiredFor] = useState([]);
+  const [loadingUser, setLoadingUser] = useState(false);
+
+  const userDocRef = useMemo(()=>{
+    if (!displayName) return null;
+    return db.collection("users").doc(normalizeName(displayName));
+  }, [displayName]);
+
+  useEffect(()=>{
+    if (!userDocRef) { setLeitner({}); setStreak(0); setBestStreak(0); return; }
+    setLoadingUser(true);
+    userDocRef.get().then(snap => {
+      if (snap.exists) {
+        const d = snap.data();
+        setLeitner(d.leitner || {});
+        setStreak(d.streak || 0);
+        setBestStreak(d.bestStreak || 0);
+      } else {
+        userDocRef.set({
+          displayName,
+          leitner: {},
+          streak: 0,
+          bestStreak: 0,
+          totalGotIt: 0,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+        }).catch(e => console.warn("create user failed", e));
+      }
+      setLoadingUser(false);
+    }).catch(e => {
+      console.warn("fetch user failed", e);
+      setLoadingUser(false);
+    });
+  }, [userDocRef]);
+
+  const lastWriteRef = useRef(0);
+  useEffect(()=>{
+    if (!userDocRef) return;
+    if (loadingUser) return;
+    const t = setTimeout(() => {
+      const totalGotIt = Object.values(leitner).filter(v => v === "sitzt").length;
+      userDocRef.set({
+        displayName,
+        leitner,
+        streak,
+        bestStreak,
+        totalGotIt,
+        lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true }).catch(e => console.warn("sync failed", e));
+      lastWriteRef.current = Date.now();
+    }, 900);
+    return () => clearTimeout(t);
+  }, [leitner, streak, bestStreak, userDocRef, loadingUser, displayName]);
+
+  const handleLogin = async (name) => {
+    try { localStorage.setItem(SESSION_KEY, name); } catch (e) {}
+    setDisplayName(name);
+  };
+  const handleLogout = () => {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    setDisplayName(null);
+    setLeitner({}); setStreak(0); setBestStreak(0);
+    setTab("dash");
+  };
+
+  const onPickTopic = (id) => { setTopicFilter(id); setTab("cards"); };
+  const onWeakSpots = () => { setTopicFilter("weak"); setTab("cards"); };
+
+  const onMark = useCallback((status, cardId, queue) => {
+    if (status === "sitzt") {
+      setStreak(s => {
+        const newStreak = s + 1;
+        setBestStreak(bs => Math.max(bs, newStreak));
+        return newStreak;
+      });
+      setStreakPulse(true);
+      setTimeout(()=>setStreakPulse(false), 500);
+    } else {
+      setStreak(0);
+    }
+
+    const after = { ...leitner, [cardId]: status };
+    const allSitzt = queue.every(c => (c.id === cardId ? status : after[c.id]) === "sitzt");
+    if (allSitzt && queue.length > 0 && !confettiFiredFor.includes(topicFilter)) {
+      try {
+        confetti({ particleCount: 110, spread: 70, origin: { y: 0.6 }, colors: ["#059669", "#10B981", "#34D399", "#4F46E5", "#F97316"] });
+        setTimeout(()=>confetti({ particleCount: 60, spread: 100, origin: { y: 0.5 } }), 250);
+      } catch (e) {}
+      setConfettiFiredFor(prev => [...prev, topicFilter]);
+    }
+  }, [leitner, topicFilter, confettiFiredFor]);
+
+  if (!displayName) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  return (
+    <div className="min-h-screen">
+      <TabBar
+        active={tab}
+        onChange={setTab}
+        streak={streak}
+        displayName={displayName}
+        onLogout={handleLogout}
+      />
+      {tab==="dash"   && <Dashboard onPickTopic={onPickTopic} onWeakSpots={onWeakSpots} leitner={leitner} totalCards={CARDS.length} totalQuiz={QUIZ.length} streak={streak} displayName={displayName} />}
+      {tab==="cards"  && <FlashcardMode leitner={leitner} setLeitner={setLeitner} topicFilter={topicFilter} setTopicFilter={setTopicFilter} onMark={onMark}/>}
+      {tab==="quiz"   && <QuizMode />}
+      {tab==="formel" && <FormulaSheet />}
+      {tab==="gloss"  && <GlossarySheet />}
+      {tab==="board"  && <Leaderboard currentName={displayName} />}
+      {tab==="search" && <SearchMode />}
+      <footer className="max-w-3xl mx-auto px-4 py-8 text-[11px] text-slate-400 text-center">
+        © Study aid for private use. Content from HSLU MSc Sustainable Financing materials (Berchtold, Mattmann, Kraft/Kempf, Engesser; past exams 2024 & 2025). Multiplayer powered by Firebase.
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
